@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @Data
 public class Message {
-    private long id;
     private User sender;
     private String text;
     private LocalDateTime time;

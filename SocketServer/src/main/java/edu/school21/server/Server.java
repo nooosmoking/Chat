@@ -21,19 +21,15 @@ import java.util.function.Supplier;
 public class Server {
     private ServerSocket server;
     private Socket client;
-    private DataOutputStream out;
-    private Map<DataOutputStream, BlockingQueue<Message>> clientMessageQueues = new ConcurrentHashMap<>();
-    private DataInputStream in;
     private final Map<String, Supplier<Command>> commandMap = new HashMap<>();
     private final Scanner scanner = new Scanner(System.in);
     private List<Chatroom> chatrooms;
 
-
     @Autowired
     public Server(UsersService usersService, MessageRepository messageRepository, RoomRepository roomRepository) {
-        commandMap.put("signin", () -> new SignIn(out, in, usersService, clientMessageQueues));
-        commandMap.put("signup", () -> new SignUp(out, in, usersService, clientMessageQueues));
-        commandMap.put("messaging", () -> new Messaging(out, in, messageRepository, clientMessageQueues));
+        commandMap.put("signin", () -> new SignIn(usersService));
+        commandMap.put("signup", () -> new SignUp(usersService));
+        commandMap.put("messaging", () -> new Messaging(messageRepository, chatrooms));
         chatrooms = roomRepository.findAll();
     }
 

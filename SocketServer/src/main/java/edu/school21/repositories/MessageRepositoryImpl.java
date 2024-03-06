@@ -26,18 +26,12 @@ public class MessageRepositoryImpl implements MessageRepository{
     }
 
     @Override
-    public Optional<Message> findById(Long id) {
-        return Optional.empty();
-    }
-
-    @Override
     public List<Message> findAll() {
         String query = "SELECT m.id AS message_id, m.text, m.date_time, u.id AS user_id, u.login FROM messages m " +
                 "LEFT JOIN users u ON m.sender_id = u.id";
         RowMapper<Message> messageRowMapper = (r, i) -> {
             Message rowMessage = new Message();
-            rowMessage.setId(r.getLong("message_id"));
-            rowMessage.setSender(new User(r.getLong("user_id"), r.getString("login"), null));
+            rowMessage.setSender(new User( r.getString("login"), null, null, null));
             rowMessage.setText(r.getString("text"));
             rowMessage.setTime(convertToLocalDateTime(r.getTimestamp("date_time")));
             return rowMessage;

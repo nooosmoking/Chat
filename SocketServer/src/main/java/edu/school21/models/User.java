@@ -5,13 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @ToString
 public class User {
-    private long id;
     private String login;
     private String password;
-
+    private DataOutputStream out;
+    private DataInputStream in;
 }

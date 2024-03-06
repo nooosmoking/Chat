@@ -10,7 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class Chatroom {
-    private long id;
     private String name;
     private List<User> userList;
 

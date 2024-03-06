@@ -1,5 +1,6 @@
 package edu.school21.server;
 
+import edu.school21.models.Chatroom;
 import edu.school21.models.Message;
 import edu.school21.models.User;
 import edu.school21.models.UserWrapper;
@@ -9,21 +10,19 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 public class Messaging implements Command{
     private final DataOutputStream out;
     private final DataInputStream in;
-    private final  Map<DataOutputStream, BlockingQueue<Message>> clientMessageQueues;
+    private final List<Chatroom> roomList;
     private final MessageRepository messageRepository;
     private boolean isClosed = false;
     private User user;
 
-    public Messaging(DataOutputStream out, DataInputStream in, MessageRepository messageRepository, Map<DataOutputStream, BlockingQueue<Message>> clientMessageQueues) {
-        this.in = in;
-        this.out = out;
-        this.clientMessageQueues = clientMessageQueues;
+    public Messaging(MessageRepository messageRepository, List<Chatroom> roomList) {
         this.messageRepository = messageRepository;
     }
 

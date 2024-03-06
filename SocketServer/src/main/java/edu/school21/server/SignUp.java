@@ -14,16 +14,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class SignUp implements Command {
-    private final DataOutputStream out;
-    private final DataInputStream in;
     private final UsersService usersService;
-    private final Map<DataOutputStream, BlockingQueue<Message>> clientMessageQueues;
 
-    public SignUp(DataOutputStream out, DataInputStream in, UsersService usersService, Map<DataOutputStream, BlockingQueue<Message>> clientMessageQueues){
-        this.in = in;
-        this.out = out;
+    public SignUp( UsersService usersService){
         this.usersService = usersService;
-        this.clientMessageQueues = clientMessageQueues;
     }
 
     @Override
