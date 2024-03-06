@@ -1,8 +1,10 @@
 package edu.school21.server;
 
+import edu.school21.models.Chatroom;
 import edu.school21.models.Message;
 import edu.school21.models.UserWrapper;
 import edu.school21.repositories.MessageRepository;
+import edu.school21.repositories.RoomRepository;
 import edu.school21.services.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,17 +22,19 @@ public class Server {
     private ServerSocket server;
     private Socket client;
     private DataOutputStream out;
-    private final Map<DataOutputStream, BlockingQueue<Message>> clientMessageQueues = new ConcurrentHashMap<>();
+    private Map<DataOutputStream, BlockingQueue<Message>> clientMessageQueues = new ConcurrentHashMap<>();
     private DataInputStream in;
     private final Map<String, Supplier<Command>> commandMap = new HashMap<>();
     private final Scanner scanner = new Scanner(System.in);
+    private List<Chatroom> chatrooms;
 
 
     @Autowired
-    public Server(UsersService usersService, MessageRepository messageRepository) {
+    public Server(UsersService usersService, MessageRepository messageRepository, RoomRepository roomRepository) {
         commandMap.put("signin", () -> new SignIn(out, in, usersService, clientMessageQueues));
         commandMap.put("signup", () -> new SignUp(out, in, usersService, clientMessageQueues));
         commandMap.put("messaging", () -> new Messaging(out, in, messageRepository, clientMessageQueues));
+        chatrooms = roomRepository.findAll();
     }
 
     public void setPort(int port) {
