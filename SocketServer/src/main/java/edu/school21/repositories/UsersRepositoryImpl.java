@@ -23,24 +23,14 @@ public class UsersRepositoryImpl implements UsersRepository {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        String query = "SELECT * FROM users WHERE id = :id";
-
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("id", id);
-        List<User> user = jdbcTemplate.query(query, parameters, new BeanPropertyRowMapper<>(User.class));
-            return user.stream().findFirst();
-
-    }
-
-    @Override
     public List<User> findAll() {
         String query = "SELECT * FROM users";
         RowMapper<User> userRowMapper = (r, i) -> {
             User rowUser = new User();
-            rowUser.setId(r.getLong("id"));
             rowUser.setLogin(r.getString("login"));
             rowUser.setPassword(r.getString("password"));
+            rowUser.setIn(null);
+            rowUser.setOut(null);
             return rowUser;
         };
         return jdbcTemplate.query(query, userRowMapper);
@@ -66,9 +56,9 @@ public class UsersRepositoryImpl implements UsersRepository {
 
 
     @Override
-    public void delete(Long id) {
-        String query = "DELETE FROM users WHERE id = :id;";
-        jdbcTemplate.update(query, new MapSqlParameterSource().addValue("id", id));
+    public void delete(String name) {
+        String query = "DELETE FROM users WHERE login = :login;";
+        jdbcTemplate.update(query, new MapSqlParameterSource().addValue("login", name));
     }
 
     @Override

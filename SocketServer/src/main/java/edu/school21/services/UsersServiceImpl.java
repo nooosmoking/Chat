@@ -24,7 +24,7 @@ public class UsersServiceImpl implements UsersService {
         if (login.isEmpty() || password.isEmpty()) {
             return null;
         }
-        usersRepository.save(new User(0L, login, passwordEncoder.encode( password)));
+        usersRepository.save(new User(login, passwordEncoder.encode( password), null, null));
         return usersRepository.findByLogin(login).get();
     }
 

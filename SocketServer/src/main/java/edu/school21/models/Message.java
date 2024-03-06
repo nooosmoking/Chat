@@ -14,6 +14,7 @@ public class Message {
     private User sender;
     private String text;
     private LocalDateTime time;
+    private Chatroom room;
 
     @Override
     public String toString() {

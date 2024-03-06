@@ -20,17 +20,12 @@ public class RoomRepositoryImpl implements RoomRepository{
     public RoomRepositoryImpl(DataSource dataSource) {
         this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
     }
-    @Override
-    public Optional<Chatroom> findById(Long id) {
-        return Optional.empty();
-    }
 
     @Override
     public List<Chatroom> findAll() {
         String query = "SELECT * FROM rooms";
         RowMapper<Chatroom> roomRowMapper = (r, i) -> {
             Chatroom rowRoom = new Chatroom();
-            rowRoom.setId(r.getLong("id"));
             rowRoom.setName(r.getString("name"));
             rowRoom.setUserList(new LinkedList<>());
             return rowRoom;
@@ -52,7 +47,7 @@ public class RoomRepositoryImpl implements RoomRepository{
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(String name) {
 
     }
 }

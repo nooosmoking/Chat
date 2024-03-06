@@ -1,5 +1,6 @@
 package edu.school21.repositories;
 
+import edu.school21.models.Chatroom;
 import edu.school21.models.Message;
 import edu.school21.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,8 @@ public class MessageRepositoryImpl implements MessageRepository{
 
     @Override
     public List<Message> findAll() {
-        String query = "SELECT m.id AS message_id, m.text, m.date_time, u.id AS user_id, u.login FROM messages m " +
-                "LEFT JOIN users u ON m.sender_id = u.id";
+        String query = "SELECT m.text, m.date_time, u.login FROM messages m " +
+                "LEFT JOIN users u ON m.sender = u.login";
         RowMapper<Message> messageRowMapper = (r, i) -> {
             Message rowMessage = new Message();
             rowMessage.setSender(new User( r.getString("login"), null, null, null));
@@ -49,10 +50,11 @@ public class MessageRepositoryImpl implements MessageRepository{
 
     @Override
     public boolean save(Message entity) {
-        String query = "INSERT INTO messages (text, sender_id) VALUES (:text, :sender_id);";
+        String query = "INSERT INTO messages (text, sender, room) VALUES (:text, :sender, :room);";
         jdbcTemplate.update(query, new MapSqlParameterSource()
                 .addValue("text", entity.getText())
-                .addValue("sender_id", entity.getSender().getId()));
+                .addValue("sender", entity.getSender().getLogin())
+                .addValue("room", entity.getRoom().getName()));
         return true;
     }
 
@@ -62,22 +64,22 @@ public class MessageRepositoryImpl implements MessageRepository{
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(String name) {
 
     }
 
     @Override
     public List<Message> findLastCountMessages(int count) {
-        String query = "SELECT m.id AS message_id, m.text, m.date_time, u.id AS user_id, u.login FROM messages m " +
-                "LEFT JOIN users u ON m.sender_id = u.id "+
+        String query = "SELECT  m.text, m.date_time, m.room, u.login FROM messages m " +
+                "LEFT JOIN users u ON m.sender = u.login "+
                 "ORDER BY m.date_time "+
                 "LIMIT :count";
         RowMapper<Message> messageRowMapper = (r, i) -> {
             Message rowMessage = new Message();
-            rowMessage.setId(r.getLong("message_id"));
-            rowMessage.setSender(new User(r.getLong("user_id"), r.getString("login"), null));
+            rowMessage.setSender(new User( r.getString("login"), null, null, null));
             rowMessage.setText(r.getString("text"));
             rowMessage.setTime(convertToLocalDateTime(r.getTimestamp("date_time")));
+            rowMessage.setRoom(new Chatroom(r.getString("room"), null));
             return rowMessage;
         };
         return jdbcTemplate.query(query, new MapSqlParameterSource().addValue("count", count),messageRowMapper);
