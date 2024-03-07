@@ -21,6 +21,8 @@ public class SignIn implements Command {
 
     @Override
     public void run(UserWrapper user) throws IOException {
+        DataOutputStream out = user.getUser().getOut();
+        DataInputStream in = user.getUser().getIn();
         out.writeUTF("Enter username:");
         out.flush();
         String username = in.readUTF();

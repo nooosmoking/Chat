@@ -20,22 +20,20 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public User signUp(String login, String password)  {
+    public boolean signUp(String login, String password)  {
         if (login.isEmpty() || password.isEmpty()) {
-            return null;
+            return false;
         }
         usersRepository.save(new User(login, passwordEncoder.encode( password), null, null));
-        return usersRepository.findByLogin(login).get();
+        return true;
     }
 
     @Override
-    public User signIn(String login, String password) {
+    public boolean signIn(String login, String password) {
         Optional<User> optionalUser = usersRepository.findByLogin(login);
         if(optionalUser.isPresent()){
-            User user = optionalUser.get();
-            if(passwordEncoder.matches(password, user.getPassword())){
-                return user;}
+            return passwordEncoder.matches(password, optionalUser.get().getPassword());
         }
-        return null;
+        return false;
     }
 }

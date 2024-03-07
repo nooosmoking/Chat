@@ -20,15 +20,15 @@ import java.util.function.Supplier;
 @Component
 public class Server {
     private ServerSocket server;
-    private final Map<String, Supplier<Command>> commandMap = new HashMap<>();
+    private final Map<Integer, Supplier<Command>> commandMap = new HashMap<>();
     private final Scanner scanner = new Scanner(System.in);
     private List<Chatroom> chatrooms;
 
     @Autowired
     public Server(UsersService usersService, MessageRepository messageRepository, RoomRepository roomRepository) {
-        commandMap.put("signin", () -> new SignIn(usersService));
-        commandMap.put("signup", () -> new SignUp(usersService));
-        commandMap.put("messaging", () -> new Messaging(messageRepository, chatrooms));
+        commandMap.put(1, () -> new SignIn(usersService));
+        commandMap.put(2, () -> new SignUp(usersService));
+        commandMap.put(0, () -> new Messaging(messageRepository, chatrooms));
         chatrooms = roomRepository.findAll();
     }
 
@@ -64,7 +64,7 @@ public class Server {
     }
 
     private class ClientThread extends Thread {
-        private Socket clientSocket;
+        private final Socket clientSocket;
 
         public ClientThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
@@ -72,12 +72,11 @@ public class Server {
 
         @Override
         public void run() {
-
             try {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
                 UserWrapper currUser = new UserWrapper(out, in);
-                out.writeUTF("Hello from Server!");
+                out.writeUTF("Hello from Server!\n1. signIn\n2. SignUp\n3. Exit");
                 out.flush();
                 while (true) {
                     getCommand(out, in ).run(currUser);
@@ -88,18 +87,19 @@ public class Server {
     }
 
     private synchronized Command getCommand(DataOutputStream out, DataInputStream in) throws IOException {
-        String entry;
+        int entry;
         Command command = null;
         do {
-            entry = in.readUTF().toLowerCase();
+            entry = in.readInt();
             try {
-                if(entry.equals("exit")){
+                if(entry==3){
                     out.writeUTF("You have left the chat.");
                     break;
                 }
                 command = commandMap.get(entry).get();
             } catch (NullPointerException e) {
-                out.writeUTF("Unknown command. Please try again.");
+                out.writeUTF("Unknown command." +
+                        " Please try again.");
             }
         } while (command == null);
         return command;
