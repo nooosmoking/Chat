@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 @Component
 public class Server {
     private ServerSocket server;
-    private Socket client;
     private final Map<String, Supplier<Command>> commandMap = new HashMap<>();
     private final Scanner scanner = new Scanner(System.in);
     private List<Chatroom> chatrooms;
@@ -46,10 +45,11 @@ public class Server {
         startStdin();
         while (true) {
             try {
-                client = server.accept();
+                Socket client = server.accept();
+                new ClientThread(client).start();
             } catch (IOException ignored) {
             }
-            createClientThread();
+
         }
     }
 
@@ -63,36 +63,40 @@ public class Server {
         stdin.start();
     }
 
-    private void createClientThread() {
-        new Thread(() -> {
-            UserWrapper currUser = new UserWrapper();
-            try {
-                DataOutputStream tmpOut = new DataOutputStream(client.getOutputStream());
-                DataInputStream tmpIn = new DataInputStream(client.getInputStream());
+    private class ClientThread extends Thread {
+        private Socket clientSocket;
 
-                tmpOut.writeUTF("Hello from Server!");
-                tmpOut.flush();
+        public ClientThread(Socket clientSocket) {
+            this.clientSocket = clientSocket;
+        }
+
+        @Override
+        public void run() {
+
+            try {
+                DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+                UserWrapper currUser = new UserWrapper(out, in);
+                out.writeUTF("Hello from Server!");
+                out.flush();
                 while (true) {
-                    getCommand(tmpOut, tmpIn ).run(currUser);
+                    getCommand(out, in ).run(currUser);
                 }
             } catch (IOException | NullPointerException ignored) {
             }
-        }).start();
+        }
     }
 
-    private Command getCommand(DataOutputStream tmpOut, DataInputStream tmpIn) throws IOException {
+    private synchronized Command getCommand(DataOutputStream out, DataInputStream in) throws IOException {
         String entry;
         Command command = null;
         do {
-            entry = tmpIn.readUTF().toLowerCase();
+            entry = in.readUTF().toLowerCase();
             try {
                 if(entry.equals("exit")){
-                    clientMessageQueues.remove(tmpOut);
-                    tmpOut.writeUTF("You have left the chat.");
+                    out.writeUTF("You have left the chat.");
                     break;
                 }
-                out = tmpOut;
-                in = tmpIn;
                 command = commandMap.get(entry).get();
             } catch (NullPointerException e) {
                 out.writeUTF("Unknown command. Please try again.");
@@ -102,14 +106,14 @@ public class Server {
     }
 
     public void close() {
-        try {
-            in.close();
-            for (DataOutputStream out : clientMessageQueues.keySet()) {
-                out.close();
-            }
-            client.close();
-            System.exit(0);
-        } catch (IOException | NullPointerException ignored) {
-        }
+//        try {
+//            in.close();
+//            for (DataOutputStream out : clientMessageQueues.keySet()) {
+//                out.close();
+//            }
+//            client.close();
+//            System.exit(0);
+//        } catch (IOException | NullPointerException ignored) {
+//        }
     }
 }
