@@ -1,6 +1,7 @@
 package edu.school21.services;
 
 import edu.school21.models.Chatroom;
+import edu.school21.models.User;
 import edu.school21.repositories.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,17 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Override
-    public boolean createRoom(Chatroom room) {
-        //
-        return true;
+    public Chatroom findRoomInList() {
+        return null;
+    }
+
+    @Override
+    public boolean createRoom(Chatroom room, List<User> users, List<Chatroom> rooms) {
+        return false;
+    }
+
+    @Override
+    public boolean chooseRoom(User user, List<Chatroom> rooms) {
+        return false;
     }
 }
