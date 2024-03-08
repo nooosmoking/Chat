@@ -4,8 +4,12 @@ import edu.school21.client.Client;
 
 public class Main {
     public static void main(String[] args) {
-        Client client = new Client("localhost", getPort(args));
-        client.run();
+        try {
+            Client client = new Client("localhost", getPort(args));
+            client.run();
+        }catch (Exception ex){
+            System.err.println("Incorrect format of argument");
+        }
     }
 
     private static int getPort(String[] args){

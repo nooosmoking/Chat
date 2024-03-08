@@ -35,7 +35,7 @@ public class Client {
                 serverAnswer = in.readUTF();
                 System.out.println(serverAnswer);
                 if(serverAnswer.equals("Successful!")){
-                    out.writeUTF("messaging");
+                    out.writeUTF("0");
                     out.flush();
                 }
             } while (!serverAnswer.equals("You have left the chat."));

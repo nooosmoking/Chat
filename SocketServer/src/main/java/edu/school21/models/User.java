@@ -17,4 +17,5 @@ public class User {
     private String password;
     private DataOutputStream out;
     private DataInputStream in;
+    private boolean isActive;
 }

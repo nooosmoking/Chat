@@ -5,6 +5,8 @@ import edu.school21.models.Message;
 import edu.school21.models.UserWrapper;
 import edu.school21.repositories.MessageRepository;
 import edu.school21.repositories.RoomRepository;
+import edu.school21.services.MessageService;
+import edu.school21.services.RoomService;
 import edu.school21.services.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,8 +15,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 @Component
@@ -25,11 +25,11 @@ public class Server {
     private List<Chatroom> chatrooms;
 
     @Autowired
-    public Server(UsersService usersService, MessageRepository messageRepository, RoomRepository roomRepository) {
+    public Server(UsersService usersService, MessageService messageService, RoomService roomService) {
+        chatrooms = roomService.findAllRooms();
         commandMap.put(1, () -> new SignIn(usersService));
         commandMap.put(2, () -> new SignUp(usersService));
-        commandMap.put(0, () -> new Messaging(messageRepository, chatrooms));
-        chatrooms = roomRepository.findAll();
+        commandMap.put(0, () -> new Messaging(messageService, roomService, chatrooms));
     }
 
     public void setPort(int port) {
@@ -49,7 +49,6 @@ public class Server {
                 new ClientThread(client).start();
             } catch (IOException ignored) {
             }
-
         }
     }
 
@@ -84,26 +83,27 @@ public class Server {
             } catch (IOException | NullPointerException ignored) {
             }
         }
+        private Command getCommand(DataOutputStream out, DataInputStream in) throws IOException {
+            int entry;
+            Command command = null;
+            do {
+                try {
+                    entry = Integer.parseInt(in.readUTF());
+                    if(entry==3){
+                        out.writeUTF("You have left the chat.");
+                        break;
+                    }
+                    command = commandMap.get(entry).get();
+                } catch (NullPointerException | NumberFormatException e) {
+                    out.writeUTF("Unknown command." +
+                            " Please try again.");
+                }
+            } while (command == null);
+            return command;
+        }
     }
 
-    private synchronized Command getCommand(DataOutputStream out, DataInputStream in) throws IOException {
-        int entry;
-        Command command = null;
-        do {
-            entry = in.readInt();
-            try {
-                if(entry==3){
-                    out.writeUTF("You have left the chat.");
-                    break;
-                }
-                command = commandMap.get(entry).get();
-            } catch (NullPointerException e) {
-                out.writeUTF("Unknown command." +
-                        " Please try again.");
-            }
-        } while (command == null);
-        return command;
-    }
+
 
     public void close() {
 //        try {

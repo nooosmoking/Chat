@@ -33,6 +33,7 @@ public class SignIn implements Command {
         if (usersService.signIn(username, password)) {
             out.writeUTF("Successful!");
             user.getUser().setLogin(username);
+            user.getUser().setActive(true);
         } else {
             out.writeUTF("Fail!");
         }

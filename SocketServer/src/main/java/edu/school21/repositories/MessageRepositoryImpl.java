@@ -32,7 +32,7 @@ public class MessageRepositoryImpl implements MessageRepository{
                 "LEFT JOIN users u ON m.sender = u.login";
         RowMapper<Message> messageRowMapper = (r, i) -> {
             Message rowMessage = new Message();
-            rowMessage.setSender(new User( r.getString("login"), null, null, null));
+            rowMessage.setSender(new User( r.getString("login"), null, null, null, false));
             rowMessage.setText(r.getString("text"));
             rowMessage.setTime(convertToLocalDateTime(r.getTimestamp("date_time")));
             return rowMessage;
@@ -76,7 +76,7 @@ public class MessageRepositoryImpl implements MessageRepository{
                 "LIMIT :count";
         RowMapper<Message> messageRowMapper = (r, i) -> {
             Message rowMessage = new Message();
-            rowMessage.setSender(new User( r.getString("login"), null, null, null));
+            rowMessage.setSender(new User( r.getString("login"), null, null, null, false));
             rowMessage.setText(r.getString("text"));
             rowMessage.setTime(convertToLocalDateTime(r.getTimestamp("date_time")));
             rowMessage.setRoom(new Chatroom(r.getString("room"), null));

@@ -34,6 +34,7 @@ public class SignUp implements Command {
         if (usersService.signUp(username, password)){
             out.writeUTF("Successful!");
             user.getUser().setLogin(username);
+            user.getUser().setActive(true);
         } else {
             out.writeUTF("Fail!");
         }

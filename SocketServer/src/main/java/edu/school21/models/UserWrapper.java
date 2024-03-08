@@ -7,7 +7,7 @@ public class UserWrapper {
     private User user;
 
     public UserWrapper(DataOutputStream out, DataInputStream in){
-//        user = new User()
+        user = new User(null, null, out, in, false);
     }
     public User getUser() {
         return user;

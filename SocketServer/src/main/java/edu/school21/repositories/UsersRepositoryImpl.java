@@ -32,6 +32,7 @@ public class UsersRepositoryImpl implements UsersRepository {
             rowUser.setPassword(r.getString("password"));
             rowUser.setIn(null);
             rowUser.setOut(null);
+            rowUser.setActive(false);
             return rowUser;
         };
         return jdbcTemplate.query(query, userRowMapper);
