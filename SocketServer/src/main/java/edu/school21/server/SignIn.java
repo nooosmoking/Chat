@@ -30,11 +30,9 @@ public class SignIn implements Command {
         out.writeUTF("Enter password:");
         out.flush();
         String password = in.readUTF();
-        User currUser = usersService.signIn(username, password);
-        if (currUser != null) {
+        if (usersService.signIn(username, password)) {
             out.writeUTF("Successful!");
-            clientMessageQueues.put(out, new LinkedBlockingDeque<>());
-            user.setUser(currUser);
+            user.getUser().setLogin(username);
         } else {
             out.writeUTF("Fail!");
         }

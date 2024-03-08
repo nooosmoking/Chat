@@ -29,6 +29,7 @@ public class Messaging implements Command{
     @Override
     public void run(UserWrapper user)throws IOException {
         this.user=user.getUser();
+        this
         if(clientMessageQueues.containsKey(out)){
             startMessaging();
             recieveMessagesFromClients();

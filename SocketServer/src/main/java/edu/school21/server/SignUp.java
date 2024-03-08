@@ -22,6 +22,8 @@ public class SignUp implements Command {
 
     @Override
     public void run(UserWrapper user) throws IOException {
+        DataOutputStream out = user.getUser().getOut();
+        DataInputStream in = user.getUser().getIn();
         out.writeUTF("Enter username:");
         out.flush();
         String username = in.readUTF();
@@ -29,11 +31,9 @@ public class SignUp implements Command {
         out.writeUTF("Enter password:");
         out.flush();
         String password = in.readUTF();
-        User currUser = usersService.signUp(username, password);
-        if (currUser != null){
+        if (usersService.signUp(username, password)){
             out.writeUTF("Successful!");
-            clientMessageQueues.put(out, new LinkedBlockingDeque<>());
-            user.setUser(currUser);
+            user.getUser().setLogin(username);
         } else {
             out.writeUTF("Fail!");
         }
