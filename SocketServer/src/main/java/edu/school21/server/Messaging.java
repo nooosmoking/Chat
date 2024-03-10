@@ -10,9 +10,11 @@ import edu.school21.services.RoomService;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 public class Messaging implements Command {
@@ -21,7 +23,6 @@ public class Messaging implements Command {
     private final List<Chatroom> roomList;
     private final MessageService messageService;
     private final RoomService roomService;
-    private boolean isClosed = false;
     private User user;
     private String roomName;
     private Chatroom currRoom;
@@ -42,14 +43,13 @@ public class Messaging implements Command {
     }
 
     @Override
-    public void run(UserWrapper userWrapper) throws IOException {
+    public void run(UserWrapper userWrapper) throws IOException, NoSuchElementException {
         this.user = userWrapper.getUser();
         this.out = user.getOut();
         this.in = user.getIn();
         if (user.isActive()) {
             startMessaging();
-            recieveMessagesFromClients();
-            sendNewMessages();
+            recieveMessageFromClient();
             out.writeUTF("You have left the chat.");
         } else {
             out.writeUTF("You`re not logged in");
@@ -58,16 +58,16 @@ public class Messaging implements Command {
         user.setActive(false);
     }
 
-    private void startMessaging() throws IOException {
+    private void startMessaging() throws IOException, NoSuchElementException {
         doRoomLogic();
         out.writeUTF(roomName + " ---");
-        for (Message m: messageService.findLastCountMessages(30, roomName)) {
+        for (Message m : messageService.findLastCountMessages(30, roomName)) {
             out.writeUTF(m.toString());
         }
         out.flush();
     }
 
-    private void doRoomLogic() throws IOException {
+    private void doRoomLogic() throws IOException, NoSuchElementException {
         out.writeUTF("1. Create room\n" +
                 "2. Choose room\n" +
                 "3. Exit");
@@ -137,43 +137,34 @@ public class Messaging implements Command {
                 }
             }
         } catch (IOException e) {
-            System.err.println(e.getMessage());;
+            System.err.println(e.getMessage());
+            ;
         }
-
     }
 
-    private void recieveMessagesFromClients() {
-//        new Thread(() -> {
-//            while (true) {
-//                try {
-//                    String answer = in.readUTF();
-//                    if(answer.equalsIgnoreCase("exit")){
-//                        isClosed = true;
-//                        break;
-//                    }
-//                    Message msg = new Message(user, answer, LocalDateTime.now());
-//                    messageRepository.save(msg);
-//                    for (Map.Entry<DataOutputStream, BlockingQueue<Message>> entry : clientMessageQueues.entrySet()) {
-//                        entry.getValue().add(msg);
-//                    }
-//                } catch (IOException e) {
-//                    System.err.println("Connection error");
-//                }
-//            }
-//        }).start();
+    private void recieveMessageFromClient() {
+        while (true) {
+            try {
+                String answer = in.readUTF();
+                if (answer.equalsIgnoreCase("exit")) {
+                    break;
+                }
+                Message msg = new Message(user, answer, LocalDateTime.now(), currRoom);
+                messageService.save(msg);
+                sendMessage(msg);
+            } catch (IOException e) {
+                System.err.println("Connection error1");
+            }
+        }
     }
 
-    private void sendNewMessages() throws IOException {
+    private void sendMessage(Message msg) throws IOException {
+        currRoom.getUserList().stream().map(User::getOut).forEach(o -> {
+            try {
+                o.writeUTF(msg.toString());
+            } catch (IOException ignored) {
+            }
+        });
 
-//        while(!isClosed){
-//            BlockingQueue<Message> currQueue = clientMessageQueues.get(out);
-//            if(!currQueue.isEmpty()) {
-//                try {
-//                    out.writeUTF(currQueue.take().toString());
-//                    out.flush();
-//                } catch (InterruptedException ignored) {
-//                }
-//            }
-//        }
     }
 }

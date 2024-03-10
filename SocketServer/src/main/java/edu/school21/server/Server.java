@@ -78,7 +78,7 @@ public class Server {
                 while (true) {
                     getCommand(out, in ).run(currUser);
                 }
-            } catch (IOException | NullPointerException ignored){
+            } catch (IOException | NullPointerException | NoSuchElementException ignored){
             }
         }
 
@@ -105,9 +105,6 @@ public class Server {
     public void close() {
 //        try {
 //            in.close();
-//            for (DataOutputStream out : clientMessageQueues.keySet()) {
-//                out.close();
-//            }
 //            client.close();
 //            System.exit(0);
 //        } catch (IOException | NullPointerException ignored) {
