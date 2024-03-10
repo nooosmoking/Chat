@@ -69,9 +69,10 @@ public class MessageRepositoryImpl implements MessageRepository{
     }
 
     @Override
-    public List<Message> findLastCountMessages(int count) {
+    public List<Message> findLastCountMessages(int count, String roomName) {
         String query = "SELECT  m.text, m.date_time, m.room, u.login FROM messages m " +
                 "LEFT JOIN users u ON m.sender = u.login "+
+                "WHERE room = :room "+
                 "ORDER BY m.date_time "+
                 "LIMIT :count";
         RowMapper<Message> messageRowMapper = (r, i) -> {
@@ -82,6 +83,9 @@ public class MessageRepositoryImpl implements MessageRepository{
             rowMessage.setRoom(new Chatroom(r.getString("room"), null));
             return rowMessage;
         };
-        return jdbcTemplate.query(query, new MapSqlParameterSource().addValue("count", count),messageRowMapper);
+        return jdbcTemplate.query(query, new MapSqlParameterSource()
+                .addValue("count", count)
+                .addValue("room", roomName)
+                ,messageRowMapper);
     }
 }

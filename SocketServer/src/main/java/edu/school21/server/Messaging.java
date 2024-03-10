@@ -1,6 +1,7 @@
 package edu.school21.server;
 
 import edu.school21.models.Chatroom;
+import edu.school21.models.Message;
 import edu.school21.models.User;
 import edu.school21.models.UserWrapper;
 import edu.school21.services.MessageService;
@@ -59,12 +60,11 @@ public class Messaging implements Command {
 
     private void startMessaging() throws IOException {
         doRoomLogic();
-//        out.writeUTF("Start messaging");
-//        out.flush();
-//        for (Message m: messageRepository.findLastCountMessages(30)) {
-//            out.writeUTF(m.toString());
-//        }
-//        out.flush();
+        out.writeUTF(roomName + " ---");
+        for (Message m: messageService.findLastCountMessages(30, roomName)) {
+            out.writeUTF(m.toString());
+        }
+        out.flush();
     }
 
     private void doRoomLogic() throws IOException {
@@ -98,8 +98,6 @@ public class Messaging implements Command {
             roomName = in.readUTF();
             if (roomService.createRoom(roomName, user, roomList)) {
                 out.writeUTF("The room was created successfully");
-                out.writeUTF(roomName + " ---");
-                out.flush();
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
@@ -111,8 +109,10 @@ public class Messaging implements Command {
         for (int i = 0; i < roomList.size(); i++) {
             roomNames.append(i);
             roomNames.append(". ");
-            roomNames.append(roomList.get(i));
-            roomNames.append("\n");
+            roomNames.append(roomList.get(i).getName());
+            if (i != roomList.size() - 1) {
+                roomNames.append("\n");
+            }
         }
         return roomNames.toString();
     }

@@ -5,7 +5,7 @@ import edu.school21.models.Message;
 import java.util.List;
 
 public interface MessageService {
-    List<Message> findLastCountMessages(int count);
+    List<Message> findLastCountMessages(int count, String roomName);
 
     boolean save(Message msg);
 }

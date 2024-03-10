@@ -19,8 +19,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> findLastCountMessages(int count) {
-        return messageRepository.findLastCountMessages(count);
+    public List<Message> findLastCountMessages(int count, String roomName) {
+        return messageRepository.findLastCountMessages(count, roomName);
     }
 
     @Override

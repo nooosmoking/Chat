@@ -6,5 +6,5 @@ import java.util.List;
 import java.util.Queue;
 
 public interface MessageRepository extends CrudRepository<Message>{
-    List<Message> findLastCountMessages(int count);
+    List<Message> findLastCountMessages(int count, String roomName);
 }
