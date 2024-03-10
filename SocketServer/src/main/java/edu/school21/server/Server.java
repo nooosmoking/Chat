@@ -1,10 +1,7 @@
 package edu.school21.server;
 
 import edu.school21.models.Chatroom;
-import edu.school21.models.Message;
 import edu.school21.models.UserWrapper;
-import edu.school21.repositories.MessageRepository;
-import edu.school21.repositories.RoomRepository;
 import edu.school21.services.MessageService;
 import edu.school21.services.RoomService;
 import edu.school21.services.UsersService;
@@ -47,7 +44,8 @@ public class Server {
             try {
                 Socket client = server.accept();
                 new ClientThread(client).start();
-            } catch (IOException ignored) {
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
             }
         }
     }
@@ -80,9 +78,10 @@ public class Server {
                 while (true) {
                     getCommand(out, in ).run(currUser);
                 }
-            } catch (IOException | NullPointerException ignored) {
+            } catch (IOException | NullPointerException ignored){
             }
         }
+
         private Command getCommand(DataOutputStream out, DataInputStream in) throws IOException {
             int entry;
             Command command = null;
@@ -102,8 +101,6 @@ public class Server {
             return command;
         }
     }
-
-
 
     public void close() {
 //        try {

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 
 @Service("roomService")
 @Transactional
@@ -24,17 +24,31 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Override
-    public Chatroom findRoomInList() {
-        return null;
+    public Optional<Chatroom> findRoomInList(List<Chatroom> rooms, String name) {
+        return rooms.stream().filter(r -> r.getName().equals(name)).findFirst();
     }
 
     @Override
-    public boolean createRoom(Chatroom room, List<User> users, List<Chatroom> rooms) {
-        return false;
+    public boolean createRoom(String name, User user, List<Chatroom> rooms) {
+        Optional<Chatroom> room = findRoomInList(rooms, name);
+        if (!room.isPresent()){
+            Chatroom newRoom = new Chatroom(name, new LinkedList<>(Collections.singletonList(user)));
+            roomRepository.save(newRoom);
+            rooms.add(newRoom);
+            return true;
+        } else {
+            room.get().getUserList().add(user);
+            return false;
+        }
     }
 
     @Override
-    public boolean chooseRoom(User user, List<Chatroom> rooms) {
+    public boolean chooseRoom(String name, User user, List<Chatroom> rooms) {
+        Optional<Chatroom> room = findRoomInList(rooms, name);
+        if(room.isPresent()){
+            room.get().getUserList().add(user);
+            return true;
+        }
         return false;
     }
 }
