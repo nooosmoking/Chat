@@ -37,18 +37,19 @@ public class RoomServiceImpl implements RoomService{
             rooms.add(newRoom);
             return true;
         } else {
-            room.get().getUserList().add(user);
             return false;
         }
     }
 
     @Override
-    public boolean chooseRoom(String name, User user, List<Chatroom> rooms) {
-        Optional<Chatroom> room = findRoomInList(rooms, name);
-        if(room.isPresent()){
+    public Optional<Chatroom> chooseRoom(int roomIndex, User user, List<Chatroom> rooms) {
+        Optional<Chatroom> room;
+        try{
+            room = Optional.of(rooms.get(roomIndex));
             room.get().getUserList().add(user);
-            return true;
+        } catch (IndexOutOfBoundsException ex){
+            room = Optional.empty();
         }
-        return false;
+        return room;
     }
 }

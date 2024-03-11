@@ -11,10 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class Messaging implements Command {
@@ -24,7 +21,6 @@ public class Messaging implements Command {
     private final MessageService messageService;
     private final RoomService roomService;
     private User user;
-    private String roomName;
     private Chatroom currRoom;
     private final Map<Integer, Supplier<Void>> commandMap = new HashMap<>();
 
@@ -60,8 +56,8 @@ public class Messaging implements Command {
 
     private void startMessaging() throws IOException, NoSuchElementException {
         doRoomLogic();
-        out.writeUTF(roomName + " ---");
-        for (Message m : messageService.findLastCountMessages(30, roomName)) {
+        out.writeUTF(currRoom.getName() + " ---");
+        for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
             out.writeUTF(m.toString());
         }
         out.flush();
@@ -88,17 +84,23 @@ public class Messaging implements Command {
                         " Please try again.");
             }
         }
-        currRoom = roomService.findRoomInList(roomList, roomName).get();
     }
 
     private void createRoom() {
         try {
-            out.writeUTF("Enter a name of chatroom:");
-            out.flush();
-            roomName = in.readUTF();
-            if (roomService.createRoom(roomName, user, roomList)) {
-                out.writeUTF("The room was created successfully");
+            String roomName;
+            while (true) {
+                out.writeUTF("Enter a name of chatroom:");
+                out.flush();
+                roomName = in.readUTF();
+                if (roomService.createRoom(roomName, user, roomList)) {
+                    out.writeUTF("The room was created successfully");
+                    break;
+                } else {
+                    out.writeUTF("A room with this name already exists");
+                }
             }
+            currRoom = roomService.findRoomInList(roomList, roomName).get();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -129,22 +131,19 @@ public class Messaging implements Command {
                 out.writeUTF("Rooms:");
                 out.writeUTF(getRoomsNames());
                 out.flush();
-                roomName = in.readUTF();
-                if (roomService.chooseRoom(roomName, user, roomList)) {
-                    break;
-                } else {
-                    out.writeUTF("There is no room " + roomName);
-                }
+                int i = Integer.parseInt(in.readUTF());
+                Optional<Chatroom> room = roomService.chooseRoom(i, user, roomList);
+                if (room.isPresent()) {
+                    currRoom = room.get();
+                    break;}
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            ;
         }
     }
 
-    private void recieveMessageFromClient() {
+    private void recieveMessageFromClient() throws IOException {
         while (true) {
-            try {
                 String answer = in.readUTF();
                 if (answer.equalsIgnoreCase("exit")) {
                     break;
@@ -152,9 +151,6 @@ public class Messaging implements Command {
                 Message msg = new Message(user, answer, LocalDateTime.now(), currRoom);
                 messageService.save(msg);
                 sendMessage(msg);
-            } catch (IOException e) {
-                System.err.println("Connection error1");
-            }
         }
     }
 

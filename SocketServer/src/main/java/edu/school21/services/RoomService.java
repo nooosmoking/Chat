@@ -10,5 +10,5 @@ public interface RoomService {
     List<Chatroom> findAllRooms();
     Optional<Chatroom> findRoomInList(List<Chatroom> rooms, String name);
     boolean createRoom(String name, User user, List<Chatroom> rooms);
-    boolean chooseRoom(String name, User user, List<Chatroom> rooms);
+    Optional<Chatroom> chooseRoom(int roomIndex, User user, List<Chatroom> rooms);
 }
