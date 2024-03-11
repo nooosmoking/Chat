@@ -23,7 +23,7 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public boolean signUp(String login, String password)  {
-        if (login.isEmpty() || password.isEmpty()) {
+        if (usersRepository.findByLogin(login).isPresent()) {
             return false;
         }
         usersRepository.save(new User(login, passwordEncoder.encode( password), null, null, true));

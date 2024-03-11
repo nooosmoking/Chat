@@ -146,6 +146,7 @@ public class Messaging implements Command {
         while (true) {
                 String answer = in.readUTF();
                 if (answer.equalsIgnoreCase("exit")) {
+                    currRoom.getUserList().remove(user);
                     break;
                 }
                 Message msg = new Message(user, answer, LocalDateTime.now(), currRoom);

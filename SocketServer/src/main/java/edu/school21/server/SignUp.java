@@ -36,7 +36,7 @@ public class SignUp implements Command {
             user.getUser().setLogin(username);
             user.getUser().setActive(true);
         } else {
-            out.writeUTF("Fail!");
+            out.writeUTF("User with this login is already exist!");
         }
         out.flush();
     }

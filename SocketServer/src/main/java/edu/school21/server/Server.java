@@ -73,7 +73,7 @@ public class Server {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
                 UserWrapper currUser = new UserWrapper(out, in);
-                out.writeUTF("Hello from Server!\n1. signIn\n2. SignUp\n3. Exit");
+                out.writeUTF("Hello from Server!");
                 out.flush();
                 while (true) {
                     getCommand(out, in ).run(currUser);
@@ -86,6 +86,8 @@ public class Server {
             int entry;
             Command command = null;
             do {
+                out.writeUTF("1. signIn\n2. SignUp\n3. Exit");
+                out.flush();
                 try {
                     entry = Integer.parseInt(in.readUTF());
                     if(entry==3){
