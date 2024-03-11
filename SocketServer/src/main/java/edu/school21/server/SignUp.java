@@ -27,6 +27,12 @@ public class SignUp implements Command {
         out.writeUTF("Enter username:");
         out.flush();
         String username = in.readUTF();
+        if (username.length() > 30){
+            out.writeUTF("Length of login shouldn't be more than 30 symbols! Try again");
+            out.writeUTF("1. signIn\n2. SignUp\n3. Exit");
+            out.flush();
+            return;
+        }
 
         out.writeUTF("Enter password:");
         out.flush();

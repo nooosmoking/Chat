@@ -93,8 +93,12 @@ public class Messaging implements Command {
                 out.writeUTF("Enter a name of chatroom:");
                 out.flush();
                 roomName = in.readUTF();
-                if (roomService.createRoom(roomName, user, roomList)) {
+                if (roomName.length() > 30){
+                    out.writeUTF("Length of login shouldn't be more than 30 symbols! Try again");
+                    out.flush();
+                } else if (roomService.createRoom(roomName, user, roomList)) {
                     out.writeUTF("The room was created successfully");
+                    out.flush();
                     break;
                 } else {
                     out.writeUTF("A room with this name already exists");
@@ -148,6 +152,10 @@ public class Messaging implements Command {
                 if (answer.equalsIgnoreCase("exit")) {
                     currRoom.getUserList().remove(user);
                     break;
+                } else if (answer.length() > 3000){
+                    out.writeUTF("Length of message shouldn't be more than 3000 symbols! Try again");
+                    out.flush();
+                    continue;
                 }
                 Message msg = new Message(user, answer, LocalDateTime.now(), currRoom);
                 messageService.save(msg);
@@ -162,6 +170,5 @@ public class Messaging implements Command {
             } catch (IOException ignored) {
             }
         });
-
     }
 }

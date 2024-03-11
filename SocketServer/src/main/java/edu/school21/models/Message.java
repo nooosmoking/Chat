@@ -19,17 +19,7 @@ public class Message {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM HH:mm");
-        String formattedTime = time.format(formatter);
 
-        String login = sender.getLogin();
-        int spacesToAdd = 20 - login.length();
-
-        StringBuilder sb = new StringBuilder().append(" ");
-
-        for (int i = 0; i < spacesToAdd; i++) {
-            sb.append(" ");
-        }
-
-        return login + sb + text + "   " + formattedTime;
+        return time.format(formatter) + " " + sender.getLogin() + "\n" + text;
     }
 }
