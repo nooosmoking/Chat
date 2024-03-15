@@ -43,6 +43,7 @@ public class Messaging implements Command {
         this.user = userWrapper.getUser();
         this.out = user.getOut();
         this.in = user.getIn();
+
         if (user.isActive()) {
             startMessaging();
             recieveMessageFromClient();

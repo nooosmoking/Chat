@@ -22,6 +22,7 @@ public class SignUp implements Command {
 
     @Override
     public void run(UserWrapper user) throws IOException {
+        System.out.println("New registration attempt");
         DataOutputStream out = user.getUser().getOut();
         DataInputStream in = user.getUser().getIn();
         out.writeUTF("Enter username:");
@@ -33,7 +34,6 @@ public class SignUp implements Command {
             out.flush();
             return;
         }
-
         out.writeUTF("Enter password:");
         out.flush();
         String password = in.readUTF();
@@ -41,8 +41,11 @@ public class SignUp implements Command {
             out.writeUTF("Successful!");
             user.getUser().setLogin(username);
             user.getUser().setActive(true);
+            System.out.println("User " + username + " successfully registered");
+            System.out.println("User " + username + " successfully signed in");
         } else {
             out.writeUTF("User with this login is already exist!");
+            System.out.println("Error while signing up user " + username + ", user already exists");
         }
         out.flush();
     }

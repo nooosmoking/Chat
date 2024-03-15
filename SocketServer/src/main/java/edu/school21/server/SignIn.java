@@ -21,6 +21,7 @@ public class SignIn implements Command {
 
     @Override
     public void run(UserWrapper user) throws IOException {
+        System.out.println("New sign attempt");
         DataOutputStream out = user.getUser().getOut();
         DataInputStream in = user.getUser().getIn();
         out.writeUTF("Enter username:");
@@ -32,7 +33,6 @@ public class SignIn implements Command {
             out.flush();
             return;
         }
-
         out.writeUTF("Enter password:");
         out.flush();
         String password = in.readUTF();
@@ -40,8 +40,10 @@ public class SignIn implements Command {
             out.writeUTF("Successful!");
             user.getUser().setLogin(username);
             user.getUser().setActive(true);
+            System.out.println("User " + username + " successfully signed in");
         } else {
             out.writeUTF("Fail!");
+            System.out.println("Error while signing in user " + username);
         }
         out.flush();
     }

@@ -39,6 +39,7 @@ public class Server {
     }
 
     public void run() {
+        System.out.println("Starting server. For exiting write \"stop\"");
         startStdin();
         while (true) {
             try {
@@ -69,12 +70,12 @@ public class Server {
 
         @Override
         public void run() {
+            System.out.println("New client connected");
             try {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
                 UserWrapper currUser = new UserWrapper(out, in);
-                out.writeUTF("Hello from Server!");
-
+                out.writeUTF("Hello from Server!\n1. signIn\n2. SignUp\n3. Exit");
                 out.flush();
                 while (true) {
                     getCommand(out, in ).run(currUser);
