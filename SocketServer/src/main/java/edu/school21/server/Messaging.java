@@ -1,5 +1,6 @@
 package edu.school21.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.school21.models.Chatroom;
 import edu.school21.models.Message;
 import edu.school21.models.User;
@@ -10,7 +11,6 @@ import edu.school21.services.RoomService;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -46,7 +46,7 @@ public class Messaging implements Command {
 
         if (user.isActive()) {
             startMessaging();
-            recieveMessageFromClient();
+            receiveMessageFromClient();
             out.writeUTF("You have left the chat.");
         } else {
             out.writeUTF("You`re not logged in");
@@ -59,7 +59,7 @@ public class Messaging implements Command {
         doRoomLogic();
         out.writeUTF(currRoom.getName() + " ---");
         for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
-            out.writeUTF(m.toString());
+            out.writeUTF(m.toJsonString());
         }
         out.flush();
     }
@@ -94,7 +94,7 @@ public class Messaging implements Command {
                 out.writeUTF("Enter a name of chatroom:");
                 out.flush();
                 roomName = in.readUTF();
-                if (roomName.length() > 30){
+                if (roomName.length() > 30) {
                     out.writeUTF("Length of login shouldn't be more than 30 symbols! Try again");
                     out.flush();
                 } else if (roomService.createRoom(roomName, user, roomList)) {
@@ -140,34 +140,38 @@ public class Messaging implements Command {
                 Optional<Chatroom> room = roomService.chooseRoom(i, user, roomList);
                 if (room.isPresent()) {
                     currRoom = room.get();
-                    break;}
+                    break;
+                }
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    private void recieveMessageFromClient() throws IOException {
+    private void receiveMessageFromClient() throws IOException {
         while (true) {
-                String answer = in.readUTF();
-                if (answer.equalsIgnoreCase("exit")) {
+            String answerJson = in.readUTF();
+            try {
+                Message msg = new Message(answerJson, user, currRoom);
+                if (msg.getText().equals("exit")) {
                     currRoom.getUserList().remove(user);
                     break;
-                } else if (answer.length() > 3000){
+                } else if (msg.getText().length() > 3000) {
                     out.writeUTF("Length of message shouldn't be more than 3000 symbols! Try again");
                     out.flush();
                     continue;
                 }
-                Message msg = new Message(user, answer, LocalDateTime.now(), currRoom);
                 messageService.save(msg);
-                sendMessage(msg);
+                sendMessage(answerJson);
+            } catch (JsonProcessingException | NoSuchElementException ignored) {
+            }
         }
     }
 
-    private void sendMessage(Message msg) throws IOException {
+    private void sendMessage(String messageJson) {
         currRoom.getUserList().stream().map(User::getOut).forEach(o -> {
             try {
-                o.writeUTF(msg.toString());
+                o.writeUTF(messageJson);
             } catch (IOException ignored) {
             }
         });
