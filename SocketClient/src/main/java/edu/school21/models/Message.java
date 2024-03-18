@@ -4,49 +4,36 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import edu.school21.services.RoomService;
-import edu.school21.services.UsersService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class Message {
-    private User sender;
+    @JsonProperty("sender_login")
+    private String sender;
     @JsonProperty("text")
     private String text;
     private LocalDateTime time;
-    private Chatroom room;
-
-    @JsonProperty("sender_login")
-    private String getSenderLogin() {
-        return sender.getLogin();
-    }
-
     @JsonProperty("chatroom_name")
-    private String getChatroomName() {
-        return room.getName();
-    }
+    private String room;
 
     @JsonProperty("time")
     private String getTime() {
         return time.format(DateTimeFormatter.ofPattern("dd.MM HH:mm"));
     }
 
-    public Message(String json, User sender, Chatroom room) throws JsonProcessingException, NoSuchElementException {
+    public Message(String json) throws JsonProcessingException, NoSuchElementException {
         ObjectMapper mapper = new ObjectMapper();
-            Message message = mapper.readValue(json, Message.class);
-            this.text = message.getText();
-            this.sender = sender;
-            this.time = LocalDateTime.parse(message.getTime(), DateTimeFormatter.ofPattern("dd.MM HH:mm"));
-            this.room = room;
+        Message message = mapper.readValue(json, Message.class);
+        this.text = message.getText();
+        this.sender = message.getSender();
+        this.time = LocalDateTime.parse(message.getTime(), DateTimeFormatter.ofPattern("dd.MM HH:mm"));
+        this.room = message.getRoom();
     }
 
     public String toJsonString() throws JsonProcessingException {
@@ -55,4 +42,12 @@ public class Message {
 
         return mapper.writeValueAsString(this);
     }
+
+    @Override
+    public String toString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM HH:mm");
+
+        return time.format(formatter) + " " + sender + "\n" + text;
+    }
 }
+
