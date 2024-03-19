@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+//@JsonIgnoreProperties(ignoreUnknown = true)
 public class Message {
     @JsonProperty("sender_login")
     private String sender;
@@ -32,7 +33,7 @@ public class Message {
 
     public Message(String json) throws JsonProcessingException, NoSuchElementException {
         ObjectMapper mapper =
-                new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         Message message = mapper.readValue(json, Message.class);
         this.text = message.getText();
@@ -52,8 +53,7 @@ public class Message {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM HH:mm");
-
-        return time.format(formatter) + "| " + sender + "\n" + text;
+        return time.format(formatter) + " " + sender + "\n|" + text;
     }
 }
 

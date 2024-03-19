@@ -1,6 +1,8 @@
 package edu.school21.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -17,6 +19,7 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@JsonIgnoreProperties({"sender", "room"})
 public class Message {
     private User sender;
     @JsonProperty("text")
@@ -51,7 +54,6 @@ public class Message {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-
         return mapper.writeValueAsString(this);
     }
 }
