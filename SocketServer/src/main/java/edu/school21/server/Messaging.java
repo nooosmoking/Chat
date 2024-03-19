@@ -57,7 +57,6 @@ public class Messaging implements Command {
 
     private void startMessaging() throws IOException, NoSuchElementException {
         doRoomLogic();
-        out.writeUTF(currRoom.getName() + " ---");
         for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
             out.writeUTF(m.toJsonString());
         }
@@ -85,6 +84,8 @@ public class Messaging implements Command {
                         " Please try again.");
             }
         }
+        out.writeUTF(currRoom.getName() + " ---");
+        out.flush();
     }
 
     private void createRoom() {

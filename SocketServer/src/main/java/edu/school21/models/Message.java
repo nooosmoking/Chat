@@ -37,7 +37,7 @@ public class Message {
 
     @JsonProperty("time")
     private String getTime() {
-        return time.format(DateTimeFormatter.ofPattern("dd.MM HH:mm"));
+        return time.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
     }
 
     public Message(String json, User sender, Chatroom room) throws JsonProcessingException, NoSuchElementException {
