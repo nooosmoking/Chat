@@ -75,13 +75,10 @@ public class Client {
             if (serverAnswer.startsWith("Rooms")) {
                 askChatroomServer = true;
             }
-            if (isMessaging){
-                e.printStackTrace();
-            }
             if (serverAnswer.endsWith("---")){
                 isMessaging = true;
-
-            }        }
+            }
+        }
 
         return true;
     }

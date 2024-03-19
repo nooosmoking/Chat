@@ -57,10 +57,14 @@ public class Messaging implements Command {
 
     private void startMessaging() throws IOException, NoSuchElementException {
         doRoomLogic();
+        try{
         for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
-            out.writeUTF(m.toJsonString());
+            String s = m.toJsonString();
+            out.writeUTF(s);
         }
-        out.flush();
+        out.flush();} catch (JsonProcessingException ex){
+            ex.printStackTrace();
+        }
     }
 
     private void doRoomLogic() throws IOException, NoSuchElementException {

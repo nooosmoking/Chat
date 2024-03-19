@@ -30,9 +30,7 @@ public class Message {
     @JsonProperty("chatroom_name")
     private String room;
 
-
     public Message(String json) throws JsonProcessingException, NoSuchElementException {
-        System.out.println(json);
         ObjectMapper mapper =
                 new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.registerModule(new JavaTimeModule());
@@ -45,6 +43,7 @@ public class Message {
 
     public String toJsonString() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 
         return mapper.writeValueAsString(this);
@@ -54,7 +53,7 @@ public class Message {
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM HH:mm");
 
-        return time.format(formatter) + " " + sender + "\n" + text;
+        return time.format(formatter) + "| " + sender + "\n" + text;
     }
 }
 
