@@ -68,18 +68,17 @@ public class Client {
             if (serverAnswer.equals("Enter username:")) {
                 askUsernameServer = true;
             }
-            if(askChatroomServer){
+            if (askChatroomServer) {
                 chatroom = serverAnswer;
                 askChatroomServer = false;
             }
             if (serverAnswer.startsWith("Rooms")) {
                 askChatroomServer = true;
             }
-            if (serverAnswer.endsWith("---")){
+            if (serverAnswer.endsWith("---")) {
                 isMessaging = true;
             }
         }
-
         return true;
     }
 
@@ -90,16 +89,17 @@ public class Client {
                 if (answer.isEmpty()) {
                     continue;
                 }
-                if (askUsernameServer){
+                if (askUsernameServer) {
                     username = answer;
                     askUsernameServer = false;
                 }
                 try {
-                    if(isMessaging){
+                    if (isMessaging) {
                         Message msg = new Message(username, answer, LocalDateTime.now(), chatroom);
                         out.writeUTF(msg.toJsonString());
                     } else {
-                    out.writeUTF(answer);}
+                        out.writeUTF(answer);
+                    }
                     out.flush();
                 } catch (IOException e) {
                     System.out.println("Connection is closed.");
@@ -115,10 +115,13 @@ public class Client {
     private void close() {
         try {
             out.close();
-            in.close();
-            scanner.close();
         } catch (IOException ignored) {
         }
+        try {
+            in.close();
+        } catch (IOException ignored) {
+        }
+        scanner.close();
         System.exit(0);
     }
 }

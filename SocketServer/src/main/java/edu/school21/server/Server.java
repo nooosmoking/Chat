@@ -1,6 +1,7 @@
 package edu.school21.server;
 
 import edu.school21.models.Chatroom;
+import edu.school21.models.User;
 import edu.school21.models.UserWrapper;
 import edu.school21.services.MessageService;
 import edu.school21.services.RoomService;
@@ -92,6 +93,9 @@ public class Server {
                     entry = Integer.parseInt(in.readUTF());
                     if(entry==3){
                         out.writeUTF("You have left the chat.");
+                        out.flush();
+                        out.close();
+                        in.close();
                         break;
                     }
                     command = commandMap.get(entry).get();
@@ -105,11 +109,33 @@ public class Server {
     }
 
     public void close() {
-//        try {
-//            in.close();
-//            client.close();
-//            System.exit(0);
-//        } catch (IOException | NullPointerException ignored) {
-//        }
+        try {
+            chatrooms.stream()
+                    .map(Chatroom::getUserList)
+                    .forEach(l -> l.stream()
+                            .map(User::getIn)
+                            .forEach(in -> {
+                                try {
+                                    in.close();
+                                } catch (IOException ignored) {
+                                }
+                            })
+                    );
+            chatrooms.stream()
+                    .map(Chatroom::getUserList)
+                    .forEach(l -> l.stream()
+                            .map(User::getOut)
+                            .forEach(out -> {
+                                try {
+                                    out.close();
+                                } catch (IOException ignored) {
+                                }
+                            })
+                    );
+            server.close();
+            scanner.close();
+            System.exit(0);
+        } catch (IOException | NullPointerException ignored) {
+        }
     }
 }

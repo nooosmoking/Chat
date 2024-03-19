@@ -74,6 +74,8 @@ public class Messaging implements Command {
                 answer = Integer.parseInt(in.readUTF());
                 if (answer == 3) {
                     out.writeUTF("You have left the chat.");
+                    out.close();
+                    in.close();
                     return;
                 } else {
                     commandMap.get(answer).get();
@@ -156,6 +158,8 @@ public class Messaging implements Command {
                 Message msg = new Message(answerJson, user, currRoom);
                 if (msg.getText().equals("exit")) {
                     currRoom.getUserList().remove(user);
+                    user.getIn().close();
+                    user.getOut().close();
                     break;
                 } else if (msg.getText().length() > 3000) {
                     out.writeUTF("Length of message shouldn't be more than 3000 symbols! Try again");
