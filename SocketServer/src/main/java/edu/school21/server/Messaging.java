@@ -55,16 +55,12 @@ public class Messaging implements Command {
         user.setActive(false);
     }
 
-    private void startMessaging() throws IOException, NoSuchElementException {
+    private void startMessaging() throws IOException, NoSuchElementException, JsonProcessingException{
         doRoomLogic();
-        try{
         for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
-            String s = m.toJsonString();
-            out.writeUTF(s);
+            out.writeUTF( m.toJsonString());
         }
-        out.flush();} catch (JsonProcessingException ex){
-            ex.printStackTrace();
-        }
+        out.flush();
     }
 
     private void doRoomLogic() throws IOException, NoSuchElementException {
@@ -119,7 +115,7 @@ public class Messaging implements Command {
     private String getRoomsNames() {
         StringBuilder roomNames = new StringBuilder();
         for (int i = 0; i < roomList.size(); i++) {
-            roomNames.append(i);
+            roomNames.append(i + 1);
             roomNames.append(". ");
             roomNames.append(roomList.get(i).getName());
             if (i != roomList.size() - 1) {
@@ -141,7 +137,7 @@ public class Messaging implements Command {
                 out.writeUTF("Rooms:");
                 out.writeUTF(getRoomsNames());
                 out.flush();
-                int i = Integer.parseInt(in.readUTF());
+                int i = Integer.parseInt(in.readUTF()) - 1;
                 Optional<Chatroom> room = roomService.chooseRoom(i, user, roomList);
                 if (room.isPresent()) {
                     currRoom = room.get();
