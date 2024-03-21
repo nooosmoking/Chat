@@ -6,6 +6,8 @@ import edu.school21.models.UserWrapper;
 import edu.school21.services.MessageService;
 import edu.school21.services.RoomService;
 import edu.school21.services.UsersService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,7 @@ import java.util.function.Supplier;
 
 @Component
 public class Server {
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
     private ServerSocket server;
     private final Map<Integer, Supplier<Command>> commandMap = new HashMap<>();
     private final Scanner scanner = new Scanner(System.in);
@@ -34,20 +37,20 @@ public class Server {
         try {
             this.server = new ServerSocket(port);
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.error("Error while starting server.");
             System.exit(-1);
         }
     }
 
     public void run() {
-        System.out.println("Starting server. For exiting write \"stop\"");
+        logger.info("Starting server. For exiting write \"stop\"");
         startStdin();
         while (true) {
             try {
                 Socket client = server.accept();
                 new ClientThread(client).start();
             } catch (IOException e) {
-                System.err.println(e.getMessage());
+                logger.error("Error while connecting client");
             }
         }
     }
@@ -71,17 +74,18 @@ public class Server {
 
         @Override
         public void run() {
-            System.out.println("New client connected");
+            logger.info("New client connected");
             try {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
                 UserWrapper currUser = new UserWrapper(out, in);
-                out.writeUTF("Hello from Server!\n1. signIn\n2. SignUp\n3. Exit");
+                out.writeUTF("Hello from Server!\n1. SignIn\n2. SignUp\n3. Exit");
                 out.flush();
                 while (true) {
                     getCommand(out, in ).run(currUser);
                 }
-            } catch (IOException | NullPointerException | NoSuchElementException ignored){
+            } catch (IOException | NullPointerException e){
+                logger.warn("Client disconnected");
             }
         }
 
@@ -96,6 +100,7 @@ public class Server {
                         out.flush();
                         out.close();
                         in.close();
+                        logger.info("Client disconnected");
                         break;
                     }
                     command = commandMap.get(entry).get();

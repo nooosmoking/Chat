@@ -7,6 +7,8 @@ import edu.school21.models.User;
 import edu.school21.models.UserWrapper;
 import edu.school21.services.MessageService;
 import edu.school21.services.RoomService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -15,6 +17,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class Messaging implements Command {
+    private static final Logger logger = LoggerFactory.getLogger(Messaging.class);
     private DataOutputStream out;
     private DataInputStream in;
     private final List<Chatroom> roomList;
@@ -39,7 +42,7 @@ public class Messaging implements Command {
     }
 
     @Override
-    public void run(UserWrapper userWrapper) throws IOException, NoSuchElementException {
+    public void run(UserWrapper userWrapper) throws IOException{
         this.user = userWrapper.getUser();
         this.out = user.getOut();
         this.in = user.getIn();
@@ -48,22 +51,25 @@ public class Messaging implements Command {
             startMessaging();
             receiveMessageFromClient();
             out.writeUTF("You have left the chat.");
+            logger.info("Client " + user.getLogin() + " disconnected");
         } else {
             out.writeUTF("You`re not logged in");
         }
+        logger.info("Client " + user.getLogin() + " disconnected");
         out.flush();
         user.setActive(false);
     }
 
-    private void startMessaging() throws IOException, NoSuchElementException, JsonProcessingException{
-        doRoomLogic();
-        for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
-            out.writeUTF( m.toJsonString());
-        }
-        out.flush();
+    private void startMessaging() throws IOException{
+        if (doRoomLogic()){
+            logger.info("Client " + user.getLogin() + " start messaging in room \""+ currRoom.getName() + "\"");
+            for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
+                out.writeUTF( m.toJsonString());
+            }
+        out.flush();}
     }
 
-    private void doRoomLogic() throws IOException, NoSuchElementException {
+    private boolean doRoomLogic() throws IOException{
         out.writeUTF("1. Create room\n" +
                 "2. Choose room\n" +
                 "3. Exit");
@@ -76,7 +82,8 @@ public class Messaging implements Command {
                     out.writeUTF("You have left the chat.");
                     out.close();
                     in.close();
-                    return;
+                    logger.info("Client " + user.getLogin() + " left chat");
+                    return false;
                 } else {
                     commandMap.get(answer).get();
                     break;
@@ -88,12 +95,14 @@ public class Messaging implements Command {
         }
         out.writeUTF(currRoom.getName() + " ---");
         out.flush();
+        return true;
     }
 
     private void createRoom() {
         try {
             String roomName;
             while (true) {
+                logger.info("Client " + user.getLogin() + " trying to create room");
                 out.writeUTF("Enter a name of chatroom:");
                 out.flush();
                 roomName = in.readUTF();
@@ -103,6 +112,7 @@ public class Messaging implements Command {
                 } else if (roomService.createRoom(roomName, user, roomList)) {
                     out.writeUTF("The room was created successfully");
                     out.flush();
+                    logger.info("Client " + user.getLogin() + " successfully created room \"" + roomName + "\"");
                     break;
                 } else {
                     out.writeUTF("A room with this name already exists");
@@ -110,7 +120,7 @@ public class Messaging implements Command {
             }
             currRoom = roomService.findRoomInList(roomList, roomName).get();
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.warn("Client " + user.getLogin() + " disconnected");
         }
     }
 
@@ -128,13 +138,14 @@ public class Messaging implements Command {
     }
 
     private void chooseRoom() {
-        try {
+        try{
             if (roomList.isEmpty()) {
                 out.writeUTF("List of rooms is empty!");
                 out.flush();
                 createRoom();
                 return;
             }
+            logger.info("Client " + user.getLogin() + " trying to choose room");
             while (true) {
                 out.writeUTF("Rooms:");
                 out.writeUTF(getRoomsNames());
@@ -143,11 +154,11 @@ public class Messaging implements Command {
                 Optional<Chatroom> room = roomService.chooseRoom(i, user, roomList);
                 if (room.isPresent()) {
                     currRoom = room.get();
+                    logger.info("Client " + user.getLogin() + " chose room \"" + currRoom.getName()+"\"");
                     break;
                 }
-            }
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
+            }} catch (IOException e){
+            logger.warn("Client " + user.getLogin() + " disconnected");
         }
     }
 
@@ -160,6 +171,7 @@ public class Messaging implements Command {
                     currRoom.getUserList().remove(user);
                     user.getIn().close();
                     user.getOut().close();
+                    logger.info("Client " + user.getLogin() + " left the chatroom \"" + currRoom.getName() + "\"");
                     break;
                 } else if (msg.getText().length() > 3000) {
                     out.writeUTF("Length of message shouldn't be more than 3000 symbols! Try again");
@@ -169,6 +181,7 @@ public class Messaging implements Command {
                 messageService.save(msg);
                 sendMessage(answerJson);
             } catch (JsonProcessingException | NoSuchElementException ignored) {
+                logger.error("Error while deserialization json message");
             }
         }
     }
@@ -177,7 +190,8 @@ public class Messaging implements Command {
         currRoom.getUserList().stream().map(User::getOut).forEach(o -> {
             try {
                 o.writeUTF(messageJson);
-            } catch (IOException ignored) {
+            } catch (IOException e) {
+                logger.error("Error while sending message");
             }
         });
     }
