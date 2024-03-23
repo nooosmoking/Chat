@@ -91,12 +91,12 @@ public class Messaging implements Command {
                     commandMap.get(answer).get();
                     break;
                 }
-            } catch (NullPointerException | NumberFormatException e) {
+            } catch (NullPointerException e) {
                 out.writeUTF("Unknown command." +
                         " Please try again.");
             }
         }
-        out.writeUTF(currRoom.getName() + " ---");
+        out.writeUTF(currRoom.getName() + " (for exiting write \"exit\") \n---");
         out.flush();
         return true;
     }
@@ -122,8 +122,7 @@ public class Messaging implements Command {
                 }
             }
             currRoom = roomService.findRoomInList(roomList, roomName).get();
-        } catch (IOException e) {
-            removeUser();
+        } catch (IOException ignored) {
         }
     }
 
@@ -153,16 +152,20 @@ public class Messaging implements Command {
                 out.writeUTF("Rooms:");
                 out.writeUTF(getRoomsNames());
                 out.flush();
-                int i = Integer.parseInt(in.readUTF()) - 1;
-                Optional<Chatroom> room = roomService.chooseRoom(i, user, roomList);
-                if (room.isPresent()) {
-                    currRoom = room.get();
-                    logger.info("Client " + user.getLogin() + " chose room \"" + currRoom.getName() + "\"");
-                    break;
+                try {
+                    int roomNum = Integer.parseInt(in.readUTF());
+                    Optional<Chatroom> room = roomService.chooseRoom(roomNum - 1, user, roomList);
+                    if (room.isPresent()) {
+                        currRoom = room.get();
+                        logger.info("Client " + user.getLogin() + " chose room \"" + currRoom.getName() + "\"");
+                        break;
+                    }
+                    out.writeUTF("There is no room with number " + roomNum);
+                } catch (NumberFormatException ex) {
+                    out.writeUTF("Unknown command. Please enter a number of room.");
                 }
             }
-        } catch (IOException e) {
-            removeUser();
+        } catch (IOException ignored) {
         }
     }
 

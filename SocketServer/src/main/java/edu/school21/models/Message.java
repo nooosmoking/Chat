@@ -28,6 +28,17 @@ public class Message {
     private LocalDateTime time;
     private Chatroom room;
 
+    public Message(String json, User sender, Chatroom room) throws JsonProcessingException, NoSuchElementException {
+        ObjectMapper mapper =
+                new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.registerModule(new JavaTimeModule());
+        Message message = mapper.readValue(json, Message.class);
+        this.text = message.getText();
+        this.sender = sender;
+        this.time = message.getTime();
+        this.room = room;
+    }
+
     @JsonProperty("sender_login")
     private String getSenderLogin() {
         return sender.getLogin();
@@ -36,17 +47,6 @@ public class Message {
     @JsonProperty("chatroom_name")
     private String getChatroomName() {
         return room.getName();
-    }
-
-    public Message(String json, User sender, Chatroom room) throws JsonProcessingException, NoSuchElementException {
-        ObjectMapper mapper =
-                new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.registerModule(new JavaTimeModule());
-        Message message = mapper.readValue(json, Message.class);
-            this.text = message.getText();
-            this.sender = sender;
-            this.time = message.getTime();
-            this.room = room;
     }
 
     public String toJsonString() throws JsonProcessingException {

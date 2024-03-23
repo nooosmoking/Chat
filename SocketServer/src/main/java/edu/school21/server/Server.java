@@ -52,19 +52,21 @@ public class Server {
                 new ClientThread(client).start();
             } catch (IOException e) {
                 if (!isStop) {
-                logger.error("Error while connecting client");}
+                    logger.error("Error while connecting client");
+                }
             }
         }
     }
 
     private void startStdin() {
         Thread stdin = new Thread(() -> {
-            while(true){
-            String answer = scanner.nextLine();
-            if (answer.equals("stop")) {
-                isStop = true;
-                close();
-            }}
+            while (true) {
+                String answer = scanner.nextLine();
+                if (answer.equals("stop")) {
+                    isStop = true;
+                    close();
+                }
+            }
         });
         stdin.start();
     }
@@ -86,12 +88,10 @@ public class Server {
                 out.writeUTF("Hello from Server!\n1. SignIn\n2. SignUp\n3. Exit");
                 out.flush();
                 while (true) {
-                    getCommand(out, in ).run(currUser);
+                    getCommand(out, in).run(currUser);
                 }
-            } catch (IOException | NullPointerException e){
-
-                    logger.warn("Client disconnected");
-                }
+            } catch (IOException | NullPointerException ignored) {
+            }
         }
 
         private Command getCommand(DataOutputStream out, DataInputStream in) throws IOException {
@@ -100,7 +100,7 @@ public class Server {
             do {
                 try {
                     entry = Integer.parseInt(in.readUTF());
-                    if(entry==3){
+                    if (entry == 3) {
                         out.writeUTF("You have left the chat.");
                         out.flush();
                         out.close();
@@ -110,8 +110,7 @@ public class Server {
                     }
                     command = commandMap.get(entry).get();
                 } catch (NullPointerException | NumberFormatException e) {
-                    out.writeUTF("Unknown command." +
-                            " Please try again.");
+                    out.writeUTF("Unknown command." + " Please try again.");
                 }
             } while (command == null);
             return command;
@@ -120,28 +119,18 @@ public class Server {
 
     public void close() {
         try {
-            chatrooms.stream()
-                    .map(Chatroom::getUserList)
-                    .forEach(l -> l.stream()
-                            .map(User::getIn)
-                            .forEach(in -> {
-                                try {
-                                    in.close();
-                                } catch (IOException ignored) {
-                                }
-                            })
-                    );
-            chatrooms.stream()
-                    .map(Chatroom::getUserList)
-                    .forEach(l -> l.stream()
-                            .map(User::getOut)
-                            .forEach(out -> {
-                                try {
-                                    out.close();
-                                } catch (IOException ignored) {
-                                }
-                            })
-                    );
+            chatrooms.stream().map(Chatroom::getUserList).forEach(l -> l.stream().map(User::getIn).forEach(in -> {
+                try {
+                    in.close();
+                } catch (IOException ignored) {
+                }
+            }));
+            chatrooms.stream().map(Chatroom::getUserList).forEach(l -> l.stream().map(User::getOut).forEach(out -> {
+                try {
+                    out.close();
+                } catch (IOException ignored) {
+                }
+            }));
             server.close();
             scanner.close();
             System.exit(0);

@@ -14,10 +14,10 @@ public class Chatroom {
     private String name;
     private List<User> userList;
 
-    public User findUserByName(String login){
-        for (User user:userList
-             ) {
-            if (user.getLogin().equals(login)){
+    public User findUserByName(String login) {
+        for (User user : userList
+        ) {
+            if (user.getLogin().equals(login)) {
                 return user;
             }
         }

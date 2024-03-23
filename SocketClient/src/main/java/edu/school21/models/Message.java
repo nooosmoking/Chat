@@ -53,7 +53,7 @@ public class Message {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM HH:mm");
-        return time.format(formatter) + " " + sender + "\n|" + text;
+        return time.format(formatter) + " " + sender + "\n| " + text;
     }
 }
 
