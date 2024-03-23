@@ -24,6 +24,7 @@ public class Server {
     private final Map<Integer, Supplier<Command>> commandMap = new HashMap<>();
     private final Scanner scanner = new Scanner(System.in);
     private List<Chatroom> chatrooms;
+    private boolean isStop = false;
 
     @Autowired
     public Server(UsersService usersService, MessageService messageService, RoomService roomService) {
@@ -50,17 +51,20 @@ public class Server {
                 Socket client = server.accept();
                 new ClientThread(client).start();
             } catch (IOException e) {
-                logger.error("Error while connecting client");
+                if (!isStop) {
+                logger.error("Error while connecting client");}
             }
         }
     }
 
     private void startStdin() {
         Thread stdin = new Thread(() -> {
+            while(true){
             String answer = scanner.nextLine();
             if (answer.equals("stop")) {
+                isStop = true;
                 close();
-            }
+            }}
         });
         stdin.start();
     }
@@ -74,19 +78,20 @@ public class Server {
 
         @Override
         public void run() {
-            logger.info("New client connected");
             try {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
                 UserWrapper currUser = new UserWrapper(out, in);
+                logger.info("New client connected");
                 out.writeUTF("Hello from Server!\n1. SignIn\n2. SignUp\n3. Exit");
                 out.flush();
                 while (true) {
                     getCommand(out, in ).run(currUser);
                 }
             } catch (IOException | NullPointerException e){
-                logger.warn("Client disconnected");
-            }
+
+                    logger.warn("Client disconnected");
+                }
         }
 
         private Command getCommand(DataOutputStream out, DataInputStream in) throws IOException {
