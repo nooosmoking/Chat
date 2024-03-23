@@ -42,34 +42,37 @@ public class Messaging implements Command {
     }
 
     @Override
-    public void run(UserWrapper userWrapper) throws IOException{
+    public void run(UserWrapper userWrapper) {
         this.user = userWrapper.getUser();
         this.out = user.getOut();
         this.in = user.getIn();
 
-        if (user.isActive()) {
-            startMessaging();
-            receiveMessageFromClient();
-            out.writeUTF("You have left the chat.");
-            logger.info("Client " + user.getLogin() + " disconnected");
-        } else {
-            out.writeUTF("You`re not logged in");
-        }
-        logger.info("Client " + user.getLogin() + " disconnected");
-        out.flush();
-        user.setActive(false);
-    }
-
-    private void startMessaging() throws IOException{
-        if (doRoomLogic()){
-            logger.info("Client " + user.getLogin() + " start messaging in room \""+ currRoom.getName() + "\"");
-            for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
-                out.writeUTF( m.toJsonString());
+        try {
+            if (user.isActive()) {
+                startMessaging();
+                receiveMessageFromClient();
+                out.writeUTF("You have left the chat.");
+            } else {
+                out.writeUTF("You`re not logged in");
             }
-        out.flush();}
+            out.flush();
+            user.setActive(false);
+        } catch (IOException ignored) {
+        }
+        removeUser();
     }
 
-    private boolean doRoomLogic() throws IOException{
+    private void startMessaging() throws IOException {
+        if (doRoomLogic()) {
+            logger.info("Client " + user.getLogin() + " start messaging in room \"" + currRoom.getName() + "\"");
+            for (Message m : messageService.findLastCountMessages(30, currRoom.getName())) {
+                out.writeUTF(m.toJsonString());
+            }
+            out.flush();
+        }
+    }
+
+    private boolean doRoomLogic() throws IOException {
         out.writeUTF("1. Create room\n" +
                 "2. Choose room\n" +
                 "3. Exit");
@@ -120,7 +123,7 @@ public class Messaging implements Command {
             }
             currRoom = roomService.findRoomInList(roomList, roomName).get();
         } catch (IOException e) {
-            logger.warn("Client " + user.getLogin() + " disconnected");
+            removeUser();
         }
     }
 
@@ -138,7 +141,7 @@ public class Messaging implements Command {
     }
 
     private void chooseRoom() {
-        try{
+        try {
             if (roomList.isEmpty()) {
                 out.writeUTF("List of rooms is empty!");
                 out.flush();
@@ -154,11 +157,12 @@ public class Messaging implements Command {
                 Optional<Chatroom> room = roomService.chooseRoom(i, user, roomList);
                 if (room.isPresent()) {
                     currRoom = room.get();
-                    logger.info("Client " + user.getLogin() + " chose room \"" + currRoom.getName()+"\"");
+                    logger.info("Client " + user.getLogin() + " chose room \"" + currRoom.getName() + "\"");
                     break;
                 }
-            }} catch (IOException e){
-            logger.warn("Client " + user.getLogin() + " disconnected");
+            }
+        } catch (IOException e) {
+            removeUser();
         }
     }
 
@@ -194,5 +198,10 @@ public class Messaging implements Command {
                 logger.error("Error while sending message");
             }
         });
+    }
+
+    private void removeUser() {
+        logger.warn("Client " + user.getLogin() + " disconnected");
+        currRoom.getUserList().remove(user);
     }
 }

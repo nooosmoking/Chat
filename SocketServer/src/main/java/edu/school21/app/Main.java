@@ -12,6 +12,9 @@ import java.util.Objects;
 
 public class Main {
     public static void main(String[] args) {
+        for (int i = 0; i < 3002; i++) {
+            System.out.print("s");
+        }
         ApplicationContext context = new AnnotationConfigApplicationContext(SocketsApplicationConfig.class);
         Server server = context.getBean(Server.class);
         server.setPort(getPort(args));
