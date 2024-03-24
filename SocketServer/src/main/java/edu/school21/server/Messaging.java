@@ -25,20 +25,14 @@ public class Messaging implements Command {
     private final RoomService roomService;
     private User user;
     private Chatroom currRoom;
-    private final Map<Integer, Supplier<Void>> commandMap = new HashMap<>();
+    private final Map<Integer, Supplier<Boolean>> commandMap = new HashMap<>();
 
     public Messaging(MessageService messageService, RoomService roomService, List<Chatroom> roomList) {
         this.messageService = messageService;
         this.roomService = roomService;
         this.roomList = roomList;
-        commandMap.put(1, () -> {
-            createRoom();
-            return null;
-        });
-        commandMap.put(2, () -> {
-            chooseRoom();
-            return null;
-        });
+        commandMap.put(1, this::createRoom);
+        commandMap.put(2, this::chooseRoom);
     }
 
     @Override
@@ -51,15 +45,9 @@ public class Messaging implements Command {
             if (user.isActive()) {
                 startMessaging();
                 receiveMessageFromClient();
-                out.writeUTF("You have left the chat.");
-            } else {
-                out.writeUTF("You`re not logged in");
             }
-            out.flush();
-            user.setActive(false);
         } catch (IOException ignored) {
         }
-        removeUser();
     }
 
     private void startMessaging() throws IOException {
@@ -69,31 +57,25 @@ public class Messaging implements Command {
                 out.writeUTF(m.toJsonString());
             }
             out.flush();
-        }
+        } else {removeUser();}
     }
 
     private boolean doRoomLogic() throws IOException {
-        out.writeUTF("1. Create room\n" +
-                "2. Choose room\n" +
-                "3. Exit");
+        out.writeUTF("1. Create room\n" + "2. Choose room\n" + "3. Exit");
         out.flush();
         int answer;
         while (true) {
             try {
                 answer = Integer.parseInt(in.readUTF());
                 if (answer == 3) {
-                    out.writeUTF("You have left the chat.");
-                    out.close();
-                    in.close();
                     logger.info("Client " + user.getLogin() + " left chat");
                     return false;
-                } else {
-                    commandMap.get(answer).get();
-                    break;
+                } else if (!commandMap.get(answer).get()){
+                    return false;
                 }
+                break;
             } catch (NullPointerException e) {
-                out.writeUTF("Unknown command." +
-                        " Please try again.");
+                out.writeUTF("Unknown command." + " Please try again.");
             }
         }
         out.writeUTF(currRoom.getName() + " (for exiting write \"exit\") \n---");
@@ -101,22 +83,25 @@ public class Messaging implements Command {
         return true;
     }
 
-    private void createRoom() {
+    private boolean createRoom() {
         try {
             String roomName;
             while (true) {
                 logger.info("Client " + user.getLogin() + " trying to create room");
-                out.writeUTF("Enter a name of chatroom:");
+                out.writeUTF("Enter a name of chatroom (for exiting write \"exit\"):");
                 out.flush();
                 roomName = in.readUTF();
                 if (roomName.length() > 30) {
                     out.writeUTF("Length of login shouldn't be more than 30 symbols! Try again");
                     out.flush();
+                } else if (roomName.equals("exit")) {
+                    return false;
                 } else if (roomService.createRoom(roomName, user, roomList)) {
                     out.writeUTF("The room was created successfully");
                     out.flush();
                     logger.info("Client " + user.getLogin() + " successfully created room \"" + roomName + "\"");
                     break;
+
                 } else {
                     out.writeUTF("A room with this name already exists");
                 }
@@ -124,6 +109,7 @@ public class Messaging implements Command {
             currRoom = roomService.findRoomInList(roomList, roomName).get();
         } catch (IOException ignored) {
         }
+        return true;
     }
 
     private String getRoomsNames() {
@@ -139,21 +125,23 @@ public class Messaging implements Command {
         return roomNames.toString();
     }
 
-    private void chooseRoom() {
+    private boolean chooseRoom() {
         try {
             if (roomList.isEmpty()) {
                 out.writeUTF("List of rooms is empty!");
                 out.flush();
-                createRoom();
-                return;
+                return createRoom();
             }
             logger.info("Client " + user.getLogin() + " trying to choose room");
             while (true) {
-                out.writeUTF("Rooms:");
+                out.writeUTF("Rooms:     (for exiting write \"0\")");
                 out.writeUTF(getRoomsNames());
                 out.flush();
                 try {
                     int roomNum = Integer.parseInt(in.readUTF());
+                    if (roomNum == 0){
+                        return false;
+                    }
                     Optional<Chatroom> room = roomService.chooseRoom(roomNum - 1, user, roomList);
                     if (room.isPresent()) {
                         currRoom = room.get();
@@ -167,6 +155,7 @@ public class Messaging implements Command {
             }
         } catch (IOException ignored) {
         }
+        return true;
     }
 
     private void receiveMessageFromClient() throws IOException {
@@ -175,11 +164,10 @@ public class Messaging implements Command {
             try {
                 Message msg = new Message(answerJson, user, currRoom);
                 if (msg.getText().equals("exit")) {
-                    currRoom.getUserList().remove(user);
-                    user.getIn().close();
-                    user.getOut().close();
+                    out.writeUTF("You have left the chat.");
                     logger.info("Client " + user.getLogin() + " left the chatroom \"" + currRoom.getName() + "\"");
-                    break;
+                    removeUser();
+                    return;
                 } else if (msg.getText().length() > 3000) {
                     out.writeUTF("Length of message shouldn't be more than 3000 symbols! Try again");
                     out.flush();
@@ -204,7 +192,20 @@ public class Messaging implements Command {
     }
 
     private void removeUser() {
+        try {
+            out.writeUTF("You have left the chat.");
+        } catch (IOException ignored) {
+        }
+        user.setActive(false);
         logger.warn("Client " + user.getLogin() + " disconnected");
         currRoom.getUserList().remove(user);
+        try {
+            user.getIn().close();
+        } catch (IOException ignored) {
+        }
+        try {
+            user.getOut().close();
+        } catch (IOException ignored) {
+        }
     }
 }

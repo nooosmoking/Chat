@@ -84,7 +84,7 @@ public class Client {
     private void startOutputThread() {
         new Thread(() -> {
             while (true) {
-                String answer = scanner.nextLine();
+                String answer = scanner.next();
                 if (answer.isEmpty()) {
                     continue;
                 }
