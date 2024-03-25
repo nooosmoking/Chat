@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS messages (
     room VARCHAR(30) REFERENCES rooms(name)
 );
 
-INSERT INTO users (login, password) VALUES ('Ann625', 'aaaa1111'), ('Ivan3000', 'bbbb4444'), ('jiordan', 'cccc6666');
+INSERT INTO users (login, password) VALUES ('Ann625', '$2a$10$qF1QRa18S6fRsXcN01FV7ulCc09J3xdZ8ChKjnwqBz0scpYxrzomW'), ('Ivan3000', '$2a$10$5sj0filanvnQ3Q6.OX4BCuXNFzKqohCNaAFI4VELcREN4Fh0pzVFK'), ('jiordan', '$2a$10$TXJM3MjnPotaoWT2IOZGsONGNiQo27zeRCW3HkpqP81SRJXsw3IXK');
 
 INSERT INTO rooms (name) VALUES ('Egypt'), ('friends'), ('sales');
 
