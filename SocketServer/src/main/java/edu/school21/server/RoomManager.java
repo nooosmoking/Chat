@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class RoomManager {
@@ -30,16 +27,17 @@ public class RoomManager {
 
     public RoomManager(List<Chatroom> roomList, RoomService roomService) {
         this.roomList = roomList;
-        this.roomService= roomService;
+        this.roomService = roomService;
         commandMap.put(1, this::createRoom);
         commandMap.put(2, this::chooseRoom);
     }
 
-    public void setUser(UserWrapper userWrapper){
+    public void setUser(UserWrapper userWrapper) {
         this.user = userWrapper.getUser();
         this.out = user.getOut();
         this.in = user.getIn();
     }
+
     public boolean doRoomLogic() throws IOException {
         out.writeUTF("1. Create room\n" + "2. Choose room\n" + "3. Exit");
         out.flush();
@@ -136,5 +134,40 @@ public class RoomManager {
         } catch (IOException ignored) {
         }
         return true;
+    }
+
+    public static List<Chatroom> findDifferentChatrooms(List<Chatroom> currRooms, List<Chatroom> newRooms) {
+        if (newRooms.isEmpty() ) {
+            currRooms.clear();
+            return null;
+        } else if (currRooms.isEmpty()){
+            return newRooms;
+        }
+        for (Chatroom chatroom1 : currRooms) {
+            boolean found = false;
+            for (Chatroom chatroom2 : newRooms) {
+                if (chatroom1.getName().equals(chatroom2.getName())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                currRooms.remove(chatroom1);
+            }
+        }
+        List<Chatroom> differentChatrooms = new ArrayList<>();
+        for (Chatroom chatroom2 : newRooms) {
+            boolean found = false;
+            for (Chatroom chatroom1 : currRooms) {
+                if (chatroom2.getName().equals(chatroom1.getName())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                differentChatrooms.add(chatroom2);
+            }
+        }
+        return differentChatrooms;
     }
 }

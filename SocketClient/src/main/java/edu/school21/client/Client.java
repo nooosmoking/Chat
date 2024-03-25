@@ -103,10 +103,6 @@ public class Client {
                 } catch (IOException e) {
                     System.out.println("Connection is closed.");
                 }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
             }
         }).start();
     }

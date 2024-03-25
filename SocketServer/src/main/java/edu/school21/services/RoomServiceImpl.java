@@ -33,8 +33,8 @@ public class RoomServiceImpl implements RoomService{
         Optional<Chatroom> room = findRoomInList(rooms, name);
         if (!room.isPresent()){
             Chatroom newRoom = new Chatroom(name, new LinkedList<>(Collections.singletonList(user)));
-            roomRepository.save(newRoom);
             rooms.add(newRoom);
+            roomRepository.save(newRoom);
             return true;
         } else {
             return false;

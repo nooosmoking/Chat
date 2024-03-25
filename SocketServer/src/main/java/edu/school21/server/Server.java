@@ -25,9 +25,11 @@ public class Server {
     private final Scanner scanner = new Scanner(System.in);
     private List<Chatroom> chatrooms;
     private boolean isStop = false;
+    private final RoomService roomService;
 
     @Autowired
     public Server(UsersService usersService, MessageService messageService, RoomService roomService) {
+        this.roomService = roomService;
         chatrooms = roomService.findAllRooms();
         commandMap.put(1, () -> new SignIn(usersService));
         commandMap.put(2, () -> new SignUp(usersService));
@@ -46,6 +48,7 @@ public class Server {
     public void run() {
         logger.info("Starting server. For exiting write \"stop\"");
         startStdin();
+        startRoomUpdater();
         while (true) {
             try {
                 Socket client = server.accept();
@@ -69,6 +72,18 @@ public class Server {
             }
         });
         stdin.start();
+    }
+
+    private void startRoomUpdater() {
+        Thread roomUpdater = new Thread(() -> {
+            while (true) {
+                List<Chatroom> tmpRooms = roomService.findAllRooms();
+                List<Chatroom> newRooms = RoomManager.findDifferentChatrooms(chatrooms, tmpRooms);
+                if(newRooms!=null){
+                    chatrooms.addAll(newRooms);}
+            }
+        });
+        roomUpdater.start();
     }
 
     private class ClientThread extends Thread {
