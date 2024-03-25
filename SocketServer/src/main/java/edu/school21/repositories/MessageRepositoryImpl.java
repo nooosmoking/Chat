@@ -14,8 +14,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
 
 @Repository("messageRepository")
 public class MessageRepositoryImpl implements MessageRepository{

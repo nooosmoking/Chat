@@ -1,7 +1,5 @@
 package edu.school21.server;
 
-import edu.school21.models.Message;
-import edu.school21.models.User;
 import edu.school21.models.UserWrapper;
 import edu.school21.services.UsersService;
 import org.slf4j.Logger;
@@ -10,10 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 
 public class SignUp implements Command {
     private static final Logger logger = LoggerFactory.getLogger(SignUp.class);

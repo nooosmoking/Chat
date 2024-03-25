@@ -19,8 +19,8 @@ import java.util.function.Supplier;
 
 public class RoomManager {
     private static final Logger logger = LoggerFactory.getLogger(RoomManager.class);
-    private List<Chatroom> roomList;
-    private RoomService roomService;
+    private final List<Chatroom> roomList;
+    private final RoomService roomService;
     private DataOutputStream out;
     private DataInputStream in;
     private final Map<Integer, Supplier<Boolean>> commandMap = new HashMap<>();

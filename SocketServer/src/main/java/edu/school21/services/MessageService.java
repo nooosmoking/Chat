@@ -7,5 +7,5 @@ import java.util.List;
 public interface MessageService {
     List<Message> findLastCountMessages(int count, String roomName);
 
-    boolean save(Message msg);
+    void save(Message msg);
 }
