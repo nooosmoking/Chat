@@ -1,14 +1,24 @@
 Многопользовательский чат.
 
 Реализация базового механизма клиент-серверного приложения на основе Java — Sockets API.
+
+Перед запуском программы необходимо ввести данные для подключения к БД Postgres в файле SocketServer/src/main/resources/db.properties
+Пример заполнения файла:
+```
+db.url=jdbc:postgresql://localhost:5432/postgres
+db.user=postgres
+db.password=postgres
+```
+Так же запустить файл SocketServer/src/main/resources/schema.sql в своей БД.
+
 Проект содержит два приложения: socket-server и socket-client. Сервер поддерживает подключение нескольких клиентов. Серверный JAR-файл устанавливается и запускается следующим образом:
 ```
-$ mvn install SocketServer
+$ mvn install -f SocketServer
 $ java -jar SocketServer/target/socket-server.jar --port={введите необходимый порт}
 ```
 Клиент — это тоже отдельный проект:
 ```
-$ mvn install SocketClient
+$ mvn install -f SocketClient
 $ java -jar SocketClient/target/socket-client.jar --server-port={введите необходимый порт}
 ```
 
