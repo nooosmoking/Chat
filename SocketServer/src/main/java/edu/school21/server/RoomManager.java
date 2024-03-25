@@ -72,19 +72,22 @@ public class RoomManager {
                 if (roomName.length() > 30) {
                     out.writeUTF("Length of login shouldn't be more than 30 symbols! Try again");
                     out.flush();
+                    continue;
                 } else if (roomName.equalsIgnoreCase("exit")) {
                     return false;
-                } else if (roomService.createRoom(roomName, user, roomList)) {
+                }
+                updateRooms();
+                if (roomService.createRoom(roomName, user, roomList)) {
                     out.writeUTF("The room was created successfully");
                     out.flush();
                     logger.info("Client " + user.getLogin() + " successfully created room \"" + roomName + "\"");
+                    currRoom = roomService.findRoomInList(roomList, roomName).get();
                     break;
                 } else {
                     out.writeUTF("A room with this name already exists");
                     out.flush();
                 }
             }
-            currRoom = roomService.findRoomInList(roomList, roomName).get();
         } catch (IOException ignored) {
         }
         return true;
@@ -105,6 +108,7 @@ public class RoomManager {
 
     private boolean chooseRoom() {
         try {
+            updateRooms();
             if (roomList.isEmpty()) {
                 out.writeUTF("List of rooms is empty!");
                 out.flush();
@@ -136,7 +140,14 @@ public class RoomManager {
         return true;
     }
 
-    public static List<Chatroom> findDifferentChatrooms(List<Chatroom> currRooms, List<Chatroom> newRooms) {
+    private void updateRooms() {
+                List<Chatroom> tmpRooms = roomService.findAllRooms();
+                List<Chatroom> newRooms = findDifferentChatrooms(roomList, tmpRooms);
+                if(newRooms!=null){
+                    roomList.addAll(newRooms);}
+            }
+
+    public List<Chatroom> findDifferentChatrooms(List<Chatroom> currRooms, List<Chatroom> newRooms) {
         if (newRooms.isEmpty() ) {
             currRooms.clear();
             return null;
