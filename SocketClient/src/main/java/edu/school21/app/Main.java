@@ -7,13 +7,13 @@ public class Main {
         try {
             Client client = new Client("localhost", getPort(args));
             client.run();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             System.err.println("Incorrect format of argument");
         }
     }
 
-    private static int getPort(String[] args){
-        if(args.length != 1 || !args[0].startsWith("--server-port=")){
+    private static int getPort(String[] args) {
+        if (args.length != 1 || !args[0].startsWith("--server-port=")) {
             System.err.println("Please write port in arguments.");
             System.exit(-1);
         }

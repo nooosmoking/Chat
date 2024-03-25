@@ -13,6 +13,7 @@ import java.util.Scanner;
 
 public class Client {
     private final Scanner scanner = new Scanner(System.in);
+    private Socket socket;
     private DataOutputStream out;
     private DataInputStream in;
     private boolean askUsernameServer = false;
@@ -23,7 +24,7 @@ public class Client {
 
     public Client(String host, int port) {
         try {
-            Socket socket = new Socket(host, port);
+            socket = new Socket(host, port);
             out = new DataOutputStream(socket.getOutputStream());
             in = new DataInputStream(socket.getInputStream());
         } catch (IOException e) {
@@ -40,8 +41,7 @@ public class Client {
 
     private void readInput() {
         try {
-            while (showMessage(in.readUTF())) {
-            }
+            while (showMessage(in.readUTF())) {}
             System.exit(0);
         } catch (IOException e) {
             System.err.println("Connection is closed.");
@@ -60,21 +60,16 @@ public class Client {
             if (serverAnswer.equals("Successful!")) {
                 out.writeUTF("0");
                 out.flush();
-            }
-            if (serverAnswer.equals("You have left the chat.")) {
+            } else if (serverAnswer.equals("You have left the chat.")) {
                 return false;
-            }
-            if (serverAnswer.equals("Enter username:")) {
+            } else if (serverAnswer.equals("Enter username:")) {
                 askUsernameServer = true;
-            }
-            if (askChatroomServer) {
+            } else if (askChatroomServer) {
                 chatroom = serverAnswer;
                 askChatroomServer = false;
-            }
-            if (serverAnswer.startsWith("Rooms")) {
+            } else if (serverAnswer.startsWith("Rooms")) {
                 askChatroomServer = true;
-            }
-            if (serverAnswer.endsWith("---")) {
+            } else if (serverAnswer.endsWith("---")) {
                 isMessaging = true;
             }
         }
@@ -108,14 +103,9 @@ public class Client {
     }
 
     private void close() {
-        try {
-            out.close();
-        } catch (IOException ignored) {
-        }
-        try {
-            in.close();
-        } catch (IOException ignored) {
-        }
+        try { out.close(); } catch (IOException ignored) {}
+        try { in.close(); } catch (IOException ignored) {}
+        try { socket.close(); } catch (IOException ignored) {}
         scanner.close();
         System.exit(0);
     }
