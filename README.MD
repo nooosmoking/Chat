@@ -48,17 +48,20 @@ Enter password:
 2.	Choose room
 3.	Exit
 > 2
-Rooms:
+Rooms:     (for exiting write "0")
 1. First Room
 2. SimpleRoom
 3. JavaRoom
 4. Exit
 > 3
-Java Room ---
-JavaMan: Hello!
-> Hello!
-Marsel: Hello!
-> Exit
+JavaRoom (for exiting write "exit") 
+---
+25.03 23:24 Ivan3000
+| Hi!
+Hello!
+25.03 23:24 Ann625
+| Hello!
+Exit
 You have left the chat.
 
 ```
