@@ -17,7 +17,7 @@ public class Chatroom {
     public User findUserByName(String login) {
         for (User user : userList
         ) {
-            if (user.getLogin().equals(login)) {
+            if (user.getLogin().equalsIgnoreCase(login)) {
                 return user;
             }
         }

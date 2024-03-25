@@ -25,7 +25,7 @@ public class RoomServiceImpl implements RoomService{
 
     @Override
     public Optional<Chatroom> findRoomInList(List<Chatroom> rooms, String name) {
-        return rooms.stream().filter(r -> r.getName().equals(name)).findFirst();
+        return rooms.stream().filter(r -> r.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override

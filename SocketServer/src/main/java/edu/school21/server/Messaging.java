@@ -61,7 +61,7 @@ public class Messaging implements Command {
             String answerJson = in.readUTF();
             try {
                 Message msg = new Message(answerJson, user, roomManager.getCurrRoom());
-                if (msg.getText().equals("exit")) {
+                if (msg.getText().equalsIgnoreCase("exit")) {
                     out.writeUTF("You have left the chat.");
                     logger.info("Client " + user.getLogin() + " left the chatroom \"" + roomManager.getCurrRoom().getName() + "\"");
                     removeUser();

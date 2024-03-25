@@ -74,7 +74,7 @@ public class RoomManager {
                 if (roomName.length() > 30) {
                     out.writeUTF("Length of login shouldn't be more than 30 symbols! Try again");
                     out.flush();
-                } else if (roomName.equals("exit")) {
+                } else if (roomName.equalsIgnoreCase("exit")) {
                     return false;
                 } else if (roomService.createRoom(roomName, user, roomList)) {
                     out.writeUTF("The room was created successfully");

@@ -62,7 +62,7 @@ public class Server {
         Thread stdin = new Thread(() -> {
             while (true) {
                 String answer = scanner.nextLine();
-                if (answer.equals("stop")) {
+                if (answer.equalsIgnoreCase("stop")) {
                     isStop = true;
                     close();
                 }
