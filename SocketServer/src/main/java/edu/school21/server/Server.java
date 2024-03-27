@@ -23,7 +23,7 @@ public class Server {
     private ServerSocket server;
     private final Map<Integer, Supplier<Command>> commandMap = new HashMap<>();
     private final Scanner scanner = new Scanner(System.in);
-    private List<Chatroom> chatrooms;
+    private final List<Chatroom> chatrooms;
     private boolean isStop = false;
 
     @Autowired

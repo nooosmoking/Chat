@@ -41,7 +41,8 @@ public class Client {
 
     private void readInput() {
         try {
-            while (showMessage(in.readUTF())) {}
+            while (showMessage(in.readUTF())) {
+            }
             System.exit(0);
         } catch (IOException e) {
             System.err.println("Connection is closed.");
@@ -103,9 +104,18 @@ public class Client {
     }
 
     private void close() {
-        try { out.close(); } catch (IOException ignored) {}
-        try { in.close(); } catch (IOException ignored) {}
-        try { socket.close(); } catch (IOException ignored) {}
+        try {
+            out.close();
+        } catch (IOException ignored) {
+        }
+        try {
+            in.close();
+        } catch (IOException ignored) {
+        }
+        try {
+            socket.close();
+        } catch (IOException ignored) {
+        }
         scanner.close();
         System.exit(0);
     }
