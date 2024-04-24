@@ -9,21 +9,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service("messageService")
-@Transactional
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository){
+    public MessageServiceImpl(MessageRepository messageRepository) {
         this.messageRepository = messageRepository;
     }
 
     @Override
+    @Transactional
     public List<Message> findLastCountMessages(int count, String roomName) {
         return messageRepository.findLastCountMessages(count, roomName);
     }
 
     @Override
+    @Transactional
     public void save(Message msg) {
         messageRepository.save(msg);
     }

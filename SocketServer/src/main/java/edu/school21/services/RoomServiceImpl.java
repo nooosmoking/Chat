@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service("roomService")
-@Transactional
 public class RoomServiceImpl implements RoomService{
     private final RoomRepository roomRepository;
 
@@ -18,17 +17,21 @@ public class RoomServiceImpl implements RoomService{
     public RoomServiceImpl(RoomRepository roomRepository){
         this.roomRepository = roomRepository;
     }
+
     @Override
+    @Transactional
     public List<Chatroom> findAllRooms() {
         return roomRepository.findAll();
     }
 
     @Override
+    @Transactional
     public Optional<Chatroom> findRoomInList(List<Chatroom> rooms, String name) {
         return rooms.stream().filter(r -> r.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override
+    @Transactional
     public boolean createRoom(String name, User user, List<Chatroom> rooms) {
         Optional<Chatroom> room = findRoomInList(rooms, name);
         if (!room.isPresent()){
@@ -42,6 +45,7 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Override
+    @Transactional
     public Optional<Chatroom> chooseRoom(int roomIndex, User user, List<Chatroom> rooms) {
         Optional<Chatroom> room;
         try{

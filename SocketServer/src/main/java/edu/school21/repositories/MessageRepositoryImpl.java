@@ -17,15 +17,16 @@ import java.util.List;
 
 @Repository("messageRepository")
 public class MessageRepositoryImpl implements MessageRepository{
-    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final DataSource dataSource;
 
     @Autowired
     public MessageRepositoryImpl(DataSource dataSource) {
-        this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+        this.dataSource = dataSource;
     }
 
     @Override
     public List<Message> findAll() {
+        NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         String query = "SELECT m.text, m.date_time, u.login FROM messages m " +
                 "LEFT JOIN users u ON m.sender = u.login";
         RowMapper<Message> messageRowMapper = (r, i) -> {
@@ -48,6 +49,7 @@ public class MessageRepositoryImpl implements MessageRepository{
 
     @Override
     public boolean save(Message entity) {
+        NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         String query = "INSERT INTO messages (text, sender, room) VALUES (:text, :sender, :room);";
         jdbcTemplate.update(query, new MapSqlParameterSource()
                 .addValue("text", entity.getText())
@@ -68,6 +70,7 @@ public class MessageRepositoryImpl implements MessageRepository{
 
     @Override
     public List<Message> findLastCountMessages(int count, String roomName) {
+        NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         String query = "SELECT  m.text, m.date_time, m.room, u.login FROM messages m " +
                 "LEFT JOIN users u ON m.sender = u.login "+
                 "WHERE room = :room "+
